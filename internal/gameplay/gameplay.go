@@ -1,6 +1,8 @@
 package gameplay
 
 import (
+	"os"
+
 	"github.com/efritz/lunar-fever/internal/common/math"
 	"github.com/efritz/lunar-fever/internal/engine"
 	"github.com/efritz/lunar-fever/internal/engine/ecs/component"
@@ -39,7 +41,11 @@ func NewGameplay(engineCtx *engine.Context) view.View {
 
 	tileMap, err := readTileMap()
 	if err != nil {
-		panic(err)
+		if !os.IsNotExist(err) {
+			panic(err)
+		}
+
+		tileMap = NewTileMap(100, 100, 64)
 	}
 
 	updateSystemManager := system.NewManager()
