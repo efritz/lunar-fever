@@ -2,7 +2,7 @@ package rendering
 
 import (
 	"github.com/efritz/lunar-fever/internal/common/math"
-	"github.com/go-gl/gl/v2.1/gl"
+	"github.com/go-gl/gl/all-core/gl"
 )
 
 const (

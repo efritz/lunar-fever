@@ -36,6 +36,12 @@ func LoadTexture(name string) (*image.RGBA, error) {
 	})
 }
 
+func LoadRawFont(name string) ([]byte, error) {
+	return decodeAsset("fonts", name, "ttf", func(r io.Reader) ([]byte, error) {
+		return io.ReadAll(r)
+	})
+}
+
 func decodeAsset[E any](assetType, name, assetExt string, reader func(r io.Reader) (E, error)) (val E, _ error) {
 	file, err := assets.Open(fmt.Sprintf("%s/%s.%s", assetType, name, assetExt))
 	if err != nil {

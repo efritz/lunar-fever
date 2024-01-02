@@ -125,7 +125,7 @@ func setCornerTiles(tileMap *TileMap) {
 // }
 
 func (r *BaseRenderer) Render(x1, y1, x2, y2 float32) {
-	tileMap := setAestheticBits(r.tileMap)
+	tileMap := r.tileMap //setAestheticBits(r.tileMap)
 
 	r.spriteBatch.Begin()
 

@@ -3,7 +3,7 @@ package engine
 import (
 	"github.com/efritz/lunar-fever/internal/engine/game"
 	"github.com/efritz/lunar-fever/internal/engine/view"
-	"github.com/go-gl/gl/v2.1/gl"
+	"github.com/go-gl/gl/all-core/gl"
 	"github.com/go-gl/glfw/v3.2/glfw"
 )
 
