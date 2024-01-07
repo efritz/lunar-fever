@@ -10,10 +10,9 @@ import (
 
 func NewMainMenu(engineCtx *engine.Context) view.View {
 	menu := NewMenu(engineCtx)
-	menu.AddEntry(&gameplayMenuEntry{Context: engineCtx})
-	menu.AddEntry(&tileEditorMenuEntry{Context: engineCtx})
-	menu.AddEntry(&noopMenuEntry{})
-	menu.AddEntry(&exitMenuEntry{exit: engineCtx.Game.Stop})
+	menu.AddEntry("Play", &gameplayMenuEntry{Context: engineCtx})
+	menu.AddEntry("Tile editor", &tileEditorMenuEntry{Context: engineCtx})
+	menu.AddEntry("Exit", &exitMenuEntry{exit: engineCtx.Game.Stop})
 
 	return menu
 }
@@ -44,12 +43,6 @@ var fakeLoader = func() {
 	}
 
 	fmt.Printf("Done!\n")
-}
-
-type noopMenuEntry struct{}
-
-func (e *noopMenuEntry) OnSelect() {
-	fmt.Printf("TEST!\n")
 }
 
 type exitMenuEntry struct {

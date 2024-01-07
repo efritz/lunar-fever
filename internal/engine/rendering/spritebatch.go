@@ -98,7 +98,9 @@ const (
 
 type DrawOptionFunc func(o *DrawOptions)
 
-func WithColor(color Color) DrawOptionFunc { return func(o *DrawOptions) { o.Color = color } }
+func WithColor(color Color) DrawOptionFunc {
+	return func(o *DrawOptions) { o.Color = color }
+}
 
 func WithRotation(rotation float32) DrawOptionFunc {
 	return func(o *DrawOptions) { o.Rotation = rotation }

@@ -12,14 +12,16 @@ type MenuEntrySelectionDelegate interface {
 type MenuEntry struct {
 	*engine.Context
 	delegate MenuEntrySelectionDelegate
+	text     string
 	texture  rendering.Texture
 	xpos     int64
 	ypos     int64
 }
 
-func NewMenuEntry(engineCtx *engine.Context, delegate MenuEntrySelectionDelegate) *MenuEntry {
+func NewMenuEntry(engineCtx *engine.Context, text string, delegate MenuEntrySelectionDelegate) *MenuEntry {
 	return &MenuEntry{
 		Context:  engineCtx,
+		text:     text,
 		delegate: delegate,
 	}
 }
@@ -48,11 +50,19 @@ func (e *MenuEntry) Render(elapsedMs int64, selected bool) {
 	}
 
 	e.SpriteBatch.Begin()
-	e.SpriteBatch.Draw(e.texture, float32(e.xpos), float32(e.ypos), 128, 64,
-		rendering.WithColor(rendering.Color{1, 0, 1, a}),
-		rendering.WithRotation(0.25),
-		rendering.WithOrigin(0, 25),
-		rendering.WithScale(1, 1.5),
+	e.SpriteBatch.Draw(
+		e.texture,
+		float32(e.xpos), float32(e.ypos)+8,
+		256, 2,
+		rendering.WithColor(rendering.Color{1, 1, 1, a}),
 	)
 	e.SpriteBatch.End()
+
+	font.Printf(
+		float32(e.xpos),
+		float32(e.ypos),
+		e.text,
+		rendering.WithTextScale(0.5),
+		rendering.WithTextColor(rendering.Color{1, 1, 1, a}),
+	)
 }

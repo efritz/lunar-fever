@@ -20,8 +20,8 @@ func NewMenu(engineCtx *engine.Context) *Menu {
 	}
 }
 
-func (m *Menu) AddEntry(delegate MenuEntrySelectionDelegate) {
-	menuEntry := NewMenuEntry(m.Context, delegate)
+func (m *Menu) AddEntry(text string, delegate MenuEntrySelectionDelegate) {
+	menuEntry := NewMenuEntry(m.Context, text, delegate)
 	m.entries = append(m.entries, menuEntry)
 
 	if m.initialized {
@@ -69,19 +69,15 @@ func (m *Menu) Update(elapsedMs int64, hasFocus bool) {
 }
 
 func (m *Menu) Render(elapsedMs int64) {
-	offset := int64(168)
+	offset := int64(128)
 	for _, entry := range m.entries {
 		entry.SetPosition(64, offset)
-		offset += 92
+		offset += 64
 	}
 
 	for i, entry := range m.entries {
 		entry.Render(elapsedMs, i == m.selected)
 	}
-
-	font.Printf(10, 300, 1.0, "Lunar Fever.")
-	font.Printf(10, 400, 2.0, "Lunar Fever.")
-	font.Printf(10, 500, 0.5, "Lunar Fever.")
 }
 
 func (m *Menu) IsOverlay() bool {

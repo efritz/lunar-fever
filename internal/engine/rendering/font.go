@@ -26,8 +26,27 @@ func LoadFont(name string) (*Font, error) {
 	}, nil
 }
 
-func (f Font) Printf(x, y, scale float32, format string, args ...interface{}) {
-	f.font.SetColor(1.0, 1.0, 0.0, 1.0) // TODO - with options
-	f.font.Printf(x, y, scale, format, args...)
+type TextOptions struct {
+	Color Color
+	Scale float32
+}
+
+type TextOptionFunc func(o *TextOptions)
+
+func WithTextColor(color Color) TextOptionFunc   { return func(o *TextOptions) { o.Color = color } }
+func WithTextScale(scale float32) TextOptionFunc { return func(o *TextOptions) { o.Scale = scale } }
+
+func (f Font) Printf(x, y float32, text string, optionFns ...TextOptionFunc) {
+	options := TextOptions{
+		Color: Black,
+		Scale: 1,
+	}
+
+	for _, fn := range optionFns {
+		fn(&options)
+	}
+
+	f.font.SetColor(options.Color.R, options.Color.G, options.Color.B, options.Color.A)
+	f.font.Printf(x, y, options.Scale, text)
 	gl.Enable(gl.BLEND)
 }
