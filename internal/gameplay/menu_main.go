@@ -10,11 +10,27 @@ import (
 
 func NewMainMenu(engineCtx *engine.Context) view.View {
 	menu := NewMenu(engineCtx, nil)
+	hasUpdate, err := HasUpdate()
+	if err != nil {
+		panic(err)
+	}
+	if hasUpdate {
+		menu.AddEntry("Download update", &downloadUpdateMenuEntry{})
+	}
 	menu.AddEntry("Play", &gameplayMenuEntry{Context: engineCtx})
 	menu.AddEntry("Tile editor", &tileEditorMenuEntry{Context: engineCtx})
 	menu.AddEntry("Exit", &exitMenuEntry{exit: engineCtx.Game.Stop})
 
 	return menu
+}
+
+type downloadUpdateMenuEntry struct {
+}
+
+func (e *downloadUpdateMenuEntry) OnSelect() {
+	if err := Update(); err != nil {
+		panic(err)
+	}
 }
 
 type gameplayMenuEntry struct {
