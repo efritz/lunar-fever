@@ -1,6 +1,7 @@
 package gameplay
 
 import (
+	"fmt"
 	"os"
 
 	"github.com/efritz/lunar-fever/internal/common/math"
@@ -24,6 +25,11 @@ type Gameplay struct {
 	playerCollection        *entity.Collection
 	physicsComponentManager *component.TypedManager[*physics.PhysicsComponent, physics.PhysicsComponentType]
 	director                *CameraDirector
+
+	updateMss     []int64
+	updateMsTotal int64
+	renderMss     []int64
+	renderMsTotal int64
 }
 
 // setTransitionOnTime(250);
@@ -90,6 +96,13 @@ func (g *Gameplay) Exit() {
 }
 
 func (g *Gameplay) Update(elapsedMs int64, hasFocus bool) {
+	g.updateMss = append(g.updateMss, elapsedMs)
+	g.updateMsTotal += elapsedMs
+	for g.updateMsTotal > 1000 {
+		g.updateMsTotal -= g.updateMss[0]
+		g.updateMss = g.updateMss[1:]
+	}
+
 	// Menu management
 	if g.Keyboard.IsKeyNewlyDown(glfw.KeyEscape) {
 		g.ViewManager.Add(NewPauseMenu(g.Context))
@@ -120,9 +133,24 @@ func (g *Gameplay) Update(elapsedMs int64, hasFocus bool) {
 }
 
 func (g *Gameplay) Render(elapsedMs int64) {
+	g.renderMss = append(g.renderMss, elapsedMs)
+	g.renderMsTotal += elapsedMs
+	for g.renderMsTotal > 1000 {
+		g.renderMsTotal -= g.renderMss[0]
+		g.renderMss = g.renderMss[1:]
+	}
+
 	g.SpriteBatch.SetViewMatrix(g.Camera.ViewMatrix())
 	g.renderSystemManager.Process(elapsedMs)
 	g.SpriteBatch.SetViewMatrix(math.IdentityMatrix)
+
+	font.Printf(
+		rendering.DisplayWidth-200,
+		30,
+		fmt.Sprintf("%d ups, %d fps", len(g.updateMss), len(g.renderMss)),
+		rendering.WithTextScale(0.5),
+		rendering.WithTextColor(rendering.Color{0, 0, 0, 1}),
+	)
 }
 
 func (g *Gameplay) IsOverlay() bool {
