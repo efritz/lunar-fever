@@ -7,16 +7,25 @@ import (
 	"github.com/go-gl/glfw/v3.2/glfw"
 )
 
+type MenuDelegate interface {
+	Init()
+	Exit()
+	Update(elapsedMs int64, hasFocus bool)
+	Render(elapsedMs int64)
+}
+
 type Menu struct {
 	*engine.Context
+	delegate    MenuDelegate
 	initialized bool
 	selected    int
 	entries     []*MenuEntry
 }
 
-func NewMenu(engineCtx *engine.Context) *Menu {
+func NewMenu(engineCtx *engine.Context, delegate MenuDelegate) *Menu {
 	return &Menu{
-		Context: engineCtx,
+		Context:  engineCtx,
+		delegate: delegate,
 	}
 }
 
@@ -30,6 +39,10 @@ func (m *Menu) AddEntry(text string, delegate MenuEntrySelectionDelegate) {
 }
 
 func (m *Menu) Init() {
+	if m.delegate != nil {
+		m.delegate.Init()
+	}
+
 	for _, entry := range m.entries {
 		entry.Init()
 	}
@@ -39,12 +52,20 @@ func (m *Menu) Init() {
 }
 
 func (m *Menu) Exit() {
+	if m.delegate != nil {
+		m.delegate.Exit()
+	}
+
 	for _, entry := range m.entries {
 		entry.Exit()
 	}
 }
 
 func (m *Menu) Update(elapsedMs int64, hasFocus bool) {
+	if m.delegate != nil {
+		m.delegate.Update(elapsedMs, hasFocus)
+	}
+
 	if m.Keyboard.IsKeyNewlyDown(glfw.KeyUp) {
 		m.selected--
 		if m.selected < 0 {
@@ -69,14 +90,12 @@ func (m *Menu) Update(elapsedMs int64, hasFocus bool) {
 }
 
 func (m *Menu) Render(elapsedMs int64) {
-	offset := int64(128)
-	for _, entry := range m.entries {
-		entry.SetPosition(64, offset)
-		offset += 64
+	if m.delegate != nil {
+		m.delegate.Render(elapsedMs)
 	}
 
 	for i, entry := range m.entries {
-		entry.Render(elapsedMs, i == m.selected)
+		entry.Render(elapsedMs, i, i == m.selected)
 	}
 }
 

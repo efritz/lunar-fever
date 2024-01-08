@@ -9,7 +9,7 @@ import (
 )
 
 func NewMainMenu(engineCtx *engine.Context) view.View {
-	menu := NewMenu(engineCtx)
+	menu := NewMenu(engineCtx, nil)
 	menu.AddEntry("Play", &gameplayMenuEntry{Context: engineCtx})
 	menu.AddEntry("Tile editor", &tileEditorMenuEntry{Context: engineCtx})
 	menu.AddEntry("Exit", &exitMenuEntry{exit: engineCtx.Game.Stop})

@@ -16,9 +16,14 @@ type PauseMenu struct {
 // setTransitionOnTime(250);
 
 func NewPauseMenu(engineCtx *engine.Context) view.View {
-	m := &PauseMenu{Context: engineCtx}
-	v := view.NewTransitionView(m, engineCtx.ViewManager)
-	m.beginExiting = v.BeginExiting
+	delegate := &PauseMenu{Context: engineCtx}
+	menu := NewMenu(engineCtx, delegate)
+	v := view.NewTransitionView(menu, engineCtx.ViewManager)
+	delegate.beginExiting = v.BeginExiting
+
+	menu.AddEntry("Resume", &resumeMenuEntry{beginExiting: v.BeginExiting})
+	menu.AddEntry("Exit", &exitMenuEntry{exit: engineCtx.Game.Stop})
+
 	return v
 }
 
@@ -47,8 +52,25 @@ func (m *PauseMenu) Render(elapsedMs int64) {
 		rendering.WithColor(color),
 	)
 	m.SpriteBatch.End()
+
+	// font.Printf(
+	// 	float32(128),
+	// 	float32(128),
+	// 	strings.ToUpper("PAUSED"),
+	// 	rendering.WithTextScale(0.4),
+	// 	rendering.WithTextColor(rendering.Color{1, 1, 1, 1}),
+	// )
 }
 
 func (m *PauseMenu) IsOverlay() bool {
 	return false
+}
+
+type resumeMenuEntry struct {
+	*engine.Context
+	beginExiting func()
+}
+
+func (e *resumeMenuEntry) OnSelect() {
+	e.beginExiting()
 }

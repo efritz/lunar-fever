@@ -1,6 +1,8 @@
 package gameplay
 
 import (
+	"strings"
+
 	"github.com/efritz/lunar-fever/internal/engine"
 	"github.com/efritz/lunar-fever/internal/engine/rendering"
 )
@@ -14,8 +16,6 @@ type MenuEntry struct {
 	delegate MenuEntrySelectionDelegate
 	text     string
 	texture  rendering.Texture
-	xpos     int64
-	ypos     int64
 }
 
 func NewMenuEntry(engineCtx *engine.Context, text string, delegate MenuEntrySelectionDelegate) *MenuEntry {
@@ -24,11 +24,6 @@ func NewMenuEntry(engineCtx *engine.Context, text string, delegate MenuEntrySele
 		text:     text,
 		delegate: delegate,
 	}
-}
-
-func (e *MenuEntry) SetPosition(xpos, ypos int64) {
-	e.xpos = xpos
-	e.ypos = ypos
 }
 
 func (e *MenuEntry) OnSelect() {
@@ -43,26 +38,26 @@ func (e *MenuEntry) Exit() {}
 
 func (e *MenuEntry) Update(elapsedMs int64, selected bool) {}
 
-func (e *MenuEntry) Render(elapsedMs int64, selected bool) {
+func (e *MenuEntry) Render(elapsedMs int64, index int, selected bool) {
 	a := float32(0.5)
 	if selected {
 		a = 1
 	}
 
-	e.SpriteBatch.Begin()
-	e.SpriteBatch.Draw(
-		e.texture,
-		float32(e.xpos), float32(e.ypos)+8,
-		256, 2,
-		rendering.WithColor(rendering.Color{1, 1, 1, a}),
-	)
-	e.SpriteBatch.End()
+	// e.SpriteBatch.Begin()
+	// e.SpriteBatch.Draw(
+	// 	e.texture,
+	// 	float32(e.xpos), float32(e.ypos)+8,
+	// 	256, 2,
+	// 	rendering.WithColor(rendering.Color{1, 1, 1, a}),
+	// )
+	// e.SpriteBatch.End()
 
 	font.Printf(
-		float32(e.xpos),
-		float32(e.ypos),
-		e.text,
-		rendering.WithTextScale(0.5),
+		float32(128),
+		float32(128+32*index),
+		strings.ToUpper(e.text),
+		rendering.WithTextScale(0.4),
 		rendering.WithTextColor(rendering.Color{1, 1, 1, a}),
 	)
 }
