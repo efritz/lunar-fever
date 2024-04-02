@@ -79,35 +79,35 @@ func setExternalWallTiles(tileMap *TileMap) {
 func setCornerTiles(tileMap *TileMap) {
 	for col := 0; col < tileMap.width; col++ {
 		for row := 0; row < tileMap.height; row++ {
-			if tileMap.GetBit(row, col, INTERIOR_WALL_N_BIT) && tileMap.GetBit(row, col, INTERIOR_WALL_E_BIT) && !tileMap.GetBit(row, col+1, FLOOR_BIT) {
+			if tileMap.GetBit(row, col, EXTERIOR_WALL_N_BIT) && tileMap.GetBit(row, col, EXTERIOR_WALL_E_BIT) && !tileMap.GetBit(row, col+1, FLOOR_BIT) {
 				tileMap.SetBit(row, col, EXTERIOR_CORNER_CONVEX_NE_BIT)
 			}
 
-			if tileMap.GetBit(row, col, INTERIOR_WALL_N_BIT) && tileMap.GetBit(row, col, INTERIOR_WALL_W_BIT) && !tileMap.GetBit(row, col-1, FLOOR_BIT) {
+			if tileMap.GetBit(row, col, EXTERIOR_WALL_N_BIT) && tileMap.GetBit(row, col, EXTERIOR_WALL_W_BIT) && !tileMap.GetBit(row, col-1, FLOOR_BIT) {
 				tileMap.SetBit(row, col, EXTERIOR_CORNER_CONVEX_NW_BIT)
 			}
 
-			if tileMap.GetBit(row, col, INTERIOR_WALL_S_BIT) && tileMap.GetBit(row, col, INTERIOR_WALL_E_BIT) && !tileMap.GetBit(row, col+1, FLOOR_BIT) {
+			if tileMap.GetBit(row, col, EXTERIOR_WALL_S_BIT) && tileMap.GetBit(row, col, EXTERIOR_WALL_E_BIT) && !tileMap.GetBit(row, col+1, FLOOR_BIT) {
 				tileMap.SetBit(row, col, EXTERIOR_CORNER_CONVEX_SE_BIT)
 			}
 
-			if tileMap.GetBit(row, col, INTERIOR_WALL_S_BIT) && tileMap.GetBit(row, col, INTERIOR_WALL_W_BIT) && !tileMap.GetBit(row, col-1, FLOOR_BIT) {
+			if tileMap.GetBit(row, col, EXTERIOR_WALL_S_BIT) && tileMap.GetBit(row, col, EXTERIOR_WALL_W_BIT) && !tileMap.GetBit(row, col-1, FLOOR_BIT) {
 				tileMap.SetBit(row, col, EXTERIOR_CORNER_CONVEX_SW_BIT)
 			}
 
-			if tileMap.GetBit(row, col, FLOOR_BIT) && tileMap.GetBit(row-1, col, INTERIOR_WALL_E_BIT) && tileMap.GetBit(row, col+1, INTERIOR_WALL_N_BIT) {
+			if tileMap.GetBit(row, col, FLOOR_BIT) && tileMap.GetBit(row-1, col, EXTERIOR_WALL_E_BIT) && tileMap.GetBit(row, col+1, EXTERIOR_WALL_N_BIT) {
 				tileMap.SetBit(row, col, EXTERIOR_CORNER_CONCAVE_NE_BIT)
 			}
 
-			if tileMap.GetBit(row, col, FLOOR_BIT) && tileMap.GetBit(row-1, col, INTERIOR_WALL_W_BIT) && tileMap.GetBit(row, col-1, INTERIOR_WALL_N_BIT) {
+			if tileMap.GetBit(row, col, FLOOR_BIT) && tileMap.GetBit(row-1, col, EXTERIOR_WALL_W_BIT) && tileMap.GetBit(row, col-1, EXTERIOR_WALL_N_BIT) {
 				tileMap.SetBit(row, col, EXTERIOR_CORNER_CONCAVE_NW_BIT)
 			}
 
-			if tileMap.GetBit(row, col, FLOOR_BIT) && tileMap.GetBit(row+1, col, INTERIOR_WALL_E_BIT) && tileMap.GetBit(row, col+1, INTERIOR_WALL_S_BIT) {
+			if tileMap.GetBit(row, col, FLOOR_BIT) && tileMap.GetBit(row+1, col, EXTERIOR_WALL_E_BIT) && tileMap.GetBit(row, col+1, EXTERIOR_WALL_S_BIT) {
 				tileMap.SetBit(row, col, EXTERIOR_CORNER_CONCAVE_SE_BIT)
 			}
 
-			if tileMap.GetBit(row, col, FLOOR_BIT) && tileMap.GetBit(row+1, col, INTERIOR_WALL_W_BIT) && tileMap.GetBit(row, col-1, INTERIOR_WALL_S_BIT) {
+			if tileMap.GetBit(row, col, FLOOR_BIT) && tileMap.GetBit(row+1, col, EXTERIOR_WALL_W_BIT) && tileMap.GetBit(row, col-1, EXTERIOR_WALL_S_BIT) {
 				tileMap.SetBit(row, col, EXTERIOR_CORNER_CONCAVE_SW_BIT)
 			}
 		}
