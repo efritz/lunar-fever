@@ -24,6 +24,7 @@ type MapCommandExecutor struct {
 	tileMap *TileMap
 	undoLog []MapCommand
 	redoLog []MapCommand
+	factory MapCommandFactory
 }
 
 func NewMapCommandExecutor(tileMap *TileMap) *MapCommandExecutor {
@@ -36,8 +37,25 @@ func (e *MapCommandExecutor) HasAction(tile Palette, row, col int) bool {
 	return e.factoryFor(tile, row, col).Valid(e.tileMap, row, col)
 }
 
+func (e *MapCommandExecutor) PrepareAction(tile Palette, row, col int) {
+	e.factory = e.factoryFor(tile, row, col)
+}
+
 func (e *MapCommandExecutor) ExecuteAction(tile Palette, row, col int) bool {
-	return e.execute(e.factoryFor(tile, row, col), row, col)
+	if e.factory != nil && e.factory.Valid(e.tileMap, row, col) {
+		command := e.factory.Create(e.tileMap, row, col)
+		command.Execute()
+
+		e.redoLog = nil
+		e.undoLog = append(e.undoLog, command)
+		if len(e.undoLog) > MaxUndoStack {
+			e.undoLog = e.undoLog[1:]
+		}
+
+		return true
+	}
+
+	return false
 }
 
 func (e *MapCommandExecutor) Undo() bool {
@@ -84,21 +102,4 @@ func (e *MapCommandExecutor) factoryFor(tile Palette, row, col int) MapCommandFa
 	}
 
 	return factory1
-}
-
-func (e *MapCommandExecutor) execute(factory MapCommandFactory, row, col int) bool {
-	if factory.Valid(e.tileMap, row, col) {
-		command := factory.Create(e.tileMap, row, col)
-		command.Execute()
-
-		e.redoLog = nil
-		e.undoLog = append(e.undoLog, command)
-		if len(e.undoLog) > MaxUndoStack {
-			e.undoLog = e.undoLog[1:]
-		}
-
-		return true
-	}
-
-	return false
 }

@@ -100,6 +100,10 @@ func (e *Editor) Update(elapsedMs int64, hasFocus bool) {
 	// Fire actions
 
 	if e.Mouse.LeftButton() {
+		if e.Mouse.LeftButtonNewlyDown() {
+			e.executor.PrepareAction(e.selected, row, col)
+		}
+
 		if e.Mouse.LeftButtonNewlyDown() || e.x != oldX || e.y != oldY {
 			e.executor.ExecuteAction(e.selected, row, col)
 		}
