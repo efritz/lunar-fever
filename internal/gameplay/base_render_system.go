@@ -139,7 +139,6 @@ func (r *BaseRenderer) Render(x1, y1, x2, y2 float32) {
 						float32(col)*64, float32(row)*64, 64, 64,
 						rendering.WithRotation(baseTexture.rotation),
 						rendering.WithOrigin(32, 32),
-						rendering.WithColor(baseTexture.color),
 					)
 				}
 			}
@@ -152,21 +151,13 @@ func (r *BaseRenderer) Render(x1, y1, x2, y2 float32) {
 type baseTexture struct {
 	texture  rendering.Texture
 	rotation float32
-	color    rendering.Color
 }
 
 func newBaseTexture(texture rendering.Texture, x, y int, rotation float32) baseTexture {
 	return baseTexture{
 		texture:  texture.Region(float32(x)*64, float32(y)*64, 64, 64),
 		rotation: (rotation + 180) * stdmath.Pi / 180,
-		color:    rendering.Color{1, 1, 1, 1},
 	}
-}
-
-func newBaseTexture2(texture rendering.Texture) baseTexture {
-	t := newBaseTexture(texture, 0, 1, 0)
-	t.color = rendering.Color{1, 1, 0, 0.5}
-	return t
 }
 
 func newBaseTextureMap(texture rendering.Texture) map[TileBitIndex]baseTexture {
