@@ -112,6 +112,46 @@ func setCornerTiles(tileMap *TileMap) {
 			}
 		}
 	}
+
+	for col := 0; col < tileMap.width; col++ {
+		for row := 0; row < tileMap.height; row++ {
+			if tileMap.GetBit(row, col, INTERIOR_WALL_N_BIT) && !tileMap.GetBit(row, col+1, INTERIOR_WALL_N_BIT) && !tileMap.GetBit(row, col, EXTERIOR_WALL_E_BIT) {
+				setTerminus(tileMap, row, col)
+			}
+
+			if tileMap.GetBit(row, col, INTERIOR_WALL_N_BIT) && !tileMap.GetBit(row, col-1, INTERIOR_WALL_N_BIT) && !tileMap.GetBit(row, col, EXTERIOR_WALL_W_BIT) {
+				setTerminus(tileMap, row, col-1)
+			}
+
+			if tileMap.GetBit(row, col, INTERIOR_WALL_E_BIT) && !tileMap.GetBit(row-1, col, INTERIOR_WALL_E_BIT) && !tileMap.GetBit(row, col, EXTERIOR_WALL_N_BIT) {
+				setTerminus(tileMap, row, col)
+			}
+
+			if tileMap.GetBit(row, col, INTERIOR_WALL_E_BIT) && !tileMap.GetBit(row+1, col, INTERIOR_WALL_E_BIT) && !tileMap.GetBit(row, col, EXTERIOR_WALL_S_BIT) {
+				setTerminus(tileMap, row+1, col)
+			}
+		}
+	}
+}
+
+func setTerminus(tileMap *TileMap, row, col int) {
+	if tileMap.GetBit(row, col, EXTERIOR_CORNER_CONVEX_NE_BIT) || tileMap.GetBit(row, col, EXTERIOR_CORNER_CONCAVE_NE_BIT) {
+		return
+	}
+	if tileMap.GetBit(row, col+1, EXTERIOR_CORNER_CONVEX_NW_BIT) || tileMap.GetBit(row, col+1, EXTERIOR_CORNER_CONCAVE_NW_BIT) {
+		return
+	}
+	if tileMap.GetBit(row-1, col, EXTERIOR_CORNER_CONVEX_SE_BIT) || tileMap.GetBit(row-1, col, EXTERIOR_CORNER_CONCAVE_SE_BIT) {
+		return
+	}
+	if tileMap.GetBit(row-1, col+1, EXTERIOR_CORNER_CONVEX_SW_BIT) || tileMap.GetBit(row-1, col+1, EXTERIOR_CORNER_CONCAVE_SW_BIT) {
+		return
+	}
+
+	tileMap.SetBit(row, col, TERMINUS_NE_BIT)
+	tileMap.SetBit(row, col+1, TERMINUS_NW_BIT)
+	tileMap.SetBit(row-1, col, TERMINUS_SE_BIT)
+	tileMap.SetBit(row-1, col+1, TERMINUS_SW_BIT)
 }
 
 func (r *BaseRenderer) Render(x1, y1, x2, y2 float32) {
@@ -179,13 +219,13 @@ func newBaseTextureMap(texture rendering.Texture) map[TileBitIndex]baseTexture {
 		EXTERIOR_CORNER_CONCAVE_NW_BIT: newBaseTexture(texture, 2, 0, 0),
 		EXTERIOR_CORNER_CONCAVE_SE_BIT: newBaseTexture(texture, 2, 0, 180),
 		EXTERIOR_CORNER_CONCAVE_SW_BIT: newBaseTexture(texture, 2, 0, 270),
-		TERMINUS_SW_BIT:                newBaseTexture(texture, 0, 0, 270),
-		TERMINUS_SE_BIT:                newBaseTexture(texture, 0, 0, 180),
-		TERMINUS_NW_BIT:                newBaseTexture(texture, 0, 0, 0),
-		TERMINUS_NE_BIT:                newBaseTexture(texture, 0, 0, 90),
 		DOOR_N_BIT:                     newBaseTexture(texture, 3, 1, 0),
 		DOOR_S_BIT:                     newBaseTexture(texture, 3, 1, 180),
 		DOOR_E_BIT:                     newBaseTexture(texture, 3, 1, 90),
 		DOOR_W_BIT:                     newBaseTexture(texture, 3, 1, 270),
+		TERMINUS_SW_BIT:                newBaseTexture(texture, 0, 0, 270),
+		TERMINUS_SE_BIT:                newBaseTexture(texture, 0, 0, 180),
+		TERMINUS_NW_BIT:                newBaseTexture(texture, 0, 0, 0),
+		TERMINUS_NE_BIT:                newBaseTexture(texture, 0, 0, 90),
 	}
 }
