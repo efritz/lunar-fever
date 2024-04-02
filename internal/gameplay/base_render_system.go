@@ -82,50 +82,40 @@ func setCornerTiles(tileMap *TileMap) {
 			if tileMap.GetBit(row, col, INTERIOR_WALL_N_BIT) && tileMap.GetBit(row, col, INTERIOR_WALL_E_BIT) && !tileMap.GetBit(row, col+1, FLOOR_BIT) {
 				tileMap.SetBit(row, col, EXTERIOR_CORNER_CONVEX_NE_BIT)
 			}
+
+			if tileMap.GetBit(row, col, INTERIOR_WALL_N_BIT) && tileMap.GetBit(row, col, INTERIOR_WALL_W_BIT) && !tileMap.GetBit(row, col-1, FLOOR_BIT) {
+				tileMap.SetBit(row, col, EXTERIOR_CORNER_CONVEX_NW_BIT)
+			}
+
+			if tileMap.GetBit(row, col, INTERIOR_WALL_S_BIT) && tileMap.GetBit(row, col, INTERIOR_WALL_E_BIT) && !tileMap.GetBit(row, col+1, FLOOR_BIT) {
+				tileMap.SetBit(row, col, EXTERIOR_CORNER_CONVEX_SE_BIT)
+			}
+
+			if tileMap.GetBit(row, col, INTERIOR_WALL_S_BIT) && tileMap.GetBit(row, col, INTERIOR_WALL_W_BIT) && !tileMap.GetBit(row, col-1, FLOOR_BIT) {
+				tileMap.SetBit(row, col, EXTERIOR_CORNER_CONVEX_SW_BIT)
+			}
+
+			if tileMap.GetBit(row, col, FLOOR_BIT) && tileMap.GetBit(row-1, col, INTERIOR_WALL_E_BIT) && tileMap.GetBit(row, col+1, INTERIOR_WALL_N_BIT) {
+				tileMap.SetBit(row, col, EXTERIOR_CORNER_CONCAVE_NE_BIT)
+			}
+
+			if tileMap.GetBit(row, col, FLOOR_BIT) && tileMap.GetBit(row-1, col, INTERIOR_WALL_W_BIT) && tileMap.GetBit(row, col-1, INTERIOR_WALL_N_BIT) {
+				tileMap.SetBit(row, col, EXTERIOR_CORNER_CONCAVE_NW_BIT)
+			}
+
+			if tileMap.GetBit(row, col, FLOOR_BIT) && tileMap.GetBit(row+1, col, INTERIOR_WALL_E_BIT) && tileMap.GetBit(row, col+1, INTERIOR_WALL_S_BIT) {
+				tileMap.SetBit(row, col, EXTERIOR_CORNER_CONCAVE_SE_BIT)
+			}
+
+			if tileMap.GetBit(row, col, FLOOR_BIT) && tileMap.GetBit(row+1, col, INTERIOR_WALL_W_BIT) && tileMap.GetBit(row, col-1, INTERIOR_WALL_S_BIT) {
+				tileMap.SetBit(row, col, EXTERIOR_CORNER_CONCAVE_SW_BIT)
+			}
 		}
 	}
 }
 
-// func buildCornerTiles(tileMap *TileMap, row, col int) {
-// 	// convex
-
-// 	if tileMap.GetBit(row, col, HWALL_BIT) && tileMap.GetBit(row+1, col+1, VWALL_BIT) && !tileMap.GetBit(row, col, FLOOR_BIT) && !tileMap.GetBit(row+1, col+1, FLOOR_BIT) {
-// 		tileMap.SetBit(row, col+1, EXTERIOR_CORNER_CONVEX_NE_BIT)
-// 	}
-
-// 	if tileMap.GetBit(row, col, HWALL_BIT) && tileMap.GetBit(row+1, col, VWALL_BIT) && !tileMap.GetBit(row+1, col-1, FLOOR_BIT) && !tileMap.GetBit(row, col, FLOOR_BIT) {
-// 		tileMap.SetBit(row, col-1, EXTERIOR_CORNER_CONVEX_NW_BIT)
-// 	}
-
-// 	if tileMap.GetBit(row, col, HWALL_BIT) && tileMap.GetBit(row, col+1, VWALL_BIT) && !tileMap.GetBit(row+1, col, FLOOR_BIT) && !tileMap.GetBit(row, col+1, FLOOR_BIT) {
-// 		tileMap.SetBit(row+1, col+1, EXTERIOR_CORNER_CONVEX_SE_BIT)
-// 	}
-
-// 	if tileMap.GetBit(row, col, HWALL_BIT) && tileMap.GetBit(row, col, VWALL_BIT) && !tileMap.GetBit(row, col-1, FLOOR_BIT) && !tileMap.GetBit(row+1, col, FLOOR_BIT) {
-// 		tileMap.SetBit(row+1, col-1, EXTERIOR_CORNER_CONVEX_SW_BIT)
-// 	}
-
-// 	// concave
-
-// 	if tileMap.GetBit(row, col, HWALL_BIT) && tileMap.GetBit(row+1, col+1, VWALL_BIT) && !tileMap.GetBit(row+1, col, FLOOR_BIT) {
-// 		tileMap.SetBit(row+1, col, EXTERIOR_CORNER_CONCAVE_NE_BIT)
-// 	}
-
-// 	if tileMap.GetBit(row, col, HWALL_BIT) && tileMap.GetBit(row+1, col, VWALL_BIT) && !tileMap.GetBit(row+1, col, FLOOR_BIT) {
-// 		tileMap.SetBit(row+1, col, EXTERIOR_CORNER_CONCAVE_NW_BIT)
-// 	}
-
-// 	if tileMap.GetBit(row, col, HWALL_BIT) && tileMap.GetBit(row, col+1, VWALL_BIT) && !tileMap.GetBit(row, col, FLOOR_BIT) {
-// 		tileMap.SetBit(row, col, EXTERIOR_CORNER_CONCAVE_SE_BIT)
-// 	}
-
-// 	if tileMap.GetBit(row, col, HWALL_BIT) && tileMap.GetBit(row, col, VWALL_BIT) && !tileMap.GetBit(row, col, FLOOR_BIT) {
-// 		tileMap.SetBit(row, col, EXTERIOR_CORNER_CONCAVE_SW_BIT)
-// 	}
-// }
-
 func (r *BaseRenderer) Render(x1, y1, x2, y2 float32) {
-	tileMap := r.tileMap //setAestheticBits(r.tileMap)
+	tileMap := setAestheticBits(r.tileMap)
 
 	r.spriteBatch.Begin()
 
@@ -148,7 +138,9 @@ func (r *BaseRenderer) Render(x1, y1, x2, y2 float32) {
 						baseTexture.texture,
 						float32(col)*64, float32(row)*64, 64, 64,
 						rendering.WithRotation(baseTexture.rotation),
-						rendering.WithOrigin(32, 32))
+						rendering.WithOrigin(32, 32),
+						rendering.WithColor(baseTexture.color),
+					)
 				}
 			}
 		}
@@ -160,13 +152,21 @@ func (r *BaseRenderer) Render(x1, y1, x2, y2 float32) {
 type baseTexture struct {
 	texture  rendering.Texture
 	rotation float32
+	color    rendering.Color
 }
 
 func newBaseTexture(texture rendering.Texture, x, y int, rotation float32) baseTexture {
 	return baseTexture{
 		texture:  texture.Region(float32(x)*64, float32(y)*64, 64, 64),
 		rotation: (rotation + 180) * stdmath.Pi / 180,
+		color:    rendering.Color{1, 1, 1, 1},
 	}
+}
+
+func newBaseTexture2(texture rendering.Texture) baseTexture {
+	t := newBaseTexture(texture, 0, 1, 0)
+	t.color = rendering.Color{1, 1, 0, 0.5}
+	return t
 }
 
 func newBaseTextureMap(texture rendering.Texture) map[TileBitIndex]baseTexture {
@@ -180,14 +180,14 @@ func newBaseTextureMap(texture rendering.Texture) map[TileBitIndex]baseTexture {
 		EXTERIOR_WALL_S_BIT:            newBaseTexture(texture, 1, 1, 180),
 		EXTERIOR_WALL_E_BIT:            newBaseTexture(texture, 1, 1, 90),
 		EXTERIOR_WALL_W_BIT:            newBaseTexture(texture, 1, 1, 270),
-		EXTERIOR_CORNER_CONVEX_NE_BIT:  newBaseTexture(texture, 2, 0, 90),
-		EXTERIOR_CORNER_CONVEX_NW_BIT:  newBaseTexture(texture, 2, 0, 0),
-		EXTERIOR_CORNER_CONVEX_SE_BIT:  newBaseTexture(texture, 2, 0, 180),
-		EXTERIOR_CORNER_CONVEX_SW_BIT:  newBaseTexture(texture, 2, 0, 270),
-		EXTERIOR_CORNER_CONCAVE_NE_BIT: newBaseTexture(texture, 1, 0, 270),
-		EXTERIOR_CORNER_CONCAVE_NW_BIT: newBaseTexture(texture, 1, 0, 180),
-		EXTERIOR_CORNER_CONCAVE_SE_BIT: newBaseTexture(texture, 1, 0, 0),
-		EXTERIOR_CORNER_CONCAVE_SW_BIT: newBaseTexture(texture, 1, 0, 90),
+		EXTERIOR_CORNER_CONVEX_NE_BIT:  newBaseTexture(texture, 1, 0, 90),
+		EXTERIOR_CORNER_CONVEX_NW_BIT:  newBaseTexture(texture, 1, 0, 0),
+		EXTERIOR_CORNER_CONVEX_SE_BIT:  newBaseTexture(texture, 1, 0, 180),
+		EXTERIOR_CORNER_CONVEX_SW_BIT:  newBaseTexture(texture, 1, 0, 270),
+		EXTERIOR_CORNER_CONCAVE_NE_BIT: newBaseTexture(texture, 2, 0, 90),
+		EXTERIOR_CORNER_CONCAVE_NW_BIT: newBaseTexture(texture, 2, 0, 0),
+		EXTERIOR_CORNER_CONCAVE_SE_BIT: newBaseTexture(texture, 2, 0, 180),
+		EXTERIOR_CORNER_CONCAVE_SW_BIT: newBaseTexture(texture, 2, 0, 270),
 		TERMINUS_SW_BIT:                newBaseTexture(texture, 0, 0, 270),
 		TERMINUS_SE_BIT:                newBaseTexture(texture, 0, 0, 180),
 		TERMINUS_NW_BIT:                newBaseTexture(texture, 0, 0, 0),
