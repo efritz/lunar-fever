@@ -14,7 +14,7 @@ type Body struct {
 	LinearVelocity  math.Vector
 	AngularVelocity float32
 	Orient          float32
-	rotation        math.Matrix32
+	Rotation        math.Matrix32
 	force           math.Vector
 	torque          float32
 }
@@ -81,16 +81,17 @@ func NewBody(fixtures []Fixture) *Body {
 		Fixtures:       fixtures,
 		inverseMass:    inverseMass,
 		inverseInertia: inverseInertia,
-		rotation:       math.Matrix32{1, 0, 0, 1},
+		Rotation:       math.Matrix32{1, 0, 0, 1},
 	}
 }
 
+// TODO - why are these unused?
 func (b *Body) SetOrient(radians float32) {
 	c := math.Cos32(radians)
 	s := math.Sin32(radians)
 
 	b.Orient = radians
-	b.rotation = math.Matrix32{c, -s, s, c}
+	b.Rotation = math.Matrix32{c, -s, s, c}
 }
 
 // TODO - unused?

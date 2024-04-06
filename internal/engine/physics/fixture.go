@@ -46,11 +46,11 @@ func NewFixture(vertices []math.Vector, density, restitution, staticFriction, dy
 }
 
 func (f Fixture) VertexInWorldSpace(body *Body, index int) math.Vector {
-	return body.rotation.Mul(f.Vertices[index]).Add(body.Position)
+	return body.Rotation.Mul(f.Vertices[index]).Add(body.Position)
 }
 
 func (f Fixture) NormalInWorldSpace(body *Body, index int) math.Vector {
-	return body.rotation.Mul(f.normals[index])
+	return body.Rotation.Mul(f.normals[index])
 }
 
 func sortByPolarAngle(vertices []math.Vector) {

@@ -38,6 +38,7 @@ func (s *playerRenderSystem) Init() {
 
 func (s *playerRenderSystem) Exit() {}
 
+// TODO - deglobalize
 var animationDelta int64
 var animationIndex int64
 

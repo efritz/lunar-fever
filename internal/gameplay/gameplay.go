@@ -41,6 +41,7 @@ func NewGameplay(engineCtx *engine.Context) view.View {
 	tagManager := tag.NewManager(eventManager)
 	groupManager := group.NewManager(eventManager)
 	playerCollection := entity.NewCollection(tag.NewEntityMatcher(tagManager, "player"), eventManager)
+	roverCollection := entity.NewCollection(tag.NewEntityMatcher(tagManager, "rover"), eventManager)
 	npcCollection := entity.NewCollection(group.NewEntityMatcher(groupManager, "npc"), eventManager)
 	physicsComponentManager := component.NewTypedManager[*physics.PhysicsComponent, physics.PhysicsComponentType](componentManager, eventManager)
 	director := &CameraDirector{Context: engineCtx}
@@ -56,6 +57,7 @@ func NewGameplay(engineCtx *engine.Context) view.View {
 
 	updateSystemManager := system.NewManager()
 	updateSystemManager.Add(&playerMovementSystem{Context: engineCtx, playerCollection: playerCollection, physicsComponentManager: physicsComponentManager}, 0)
+	updateSystemManager.Add(&roverMovementSystem{Context: engineCtx, roverCollection: roverCollection, physicsComponentManager: physicsComponentManager}, 0)
 	updateSystemManager.Add(&cameraMovementSystem{Context: engineCtx}, 0)
 	updateSystemManager.Add(director, 0)
 	updateSystemManager.Add(physics.NewPhysicsComponentSystem(eventManager, componentManager), 0)
@@ -65,11 +67,16 @@ func NewGameplay(engineCtx *engine.Context) view.View {
 	renderSystemManager.Add(&regolithRenderSystem{Context: engineCtx}, 0)
 	renderSystemManager.Add(&baseRenderSystem{Context: engineCtx, tileMap: tileMap}, 1)
 	renderSystemManager.Add(&playerRenderSystem{Context: engineCtx, playerCollection: playerCollection, physicsComponentManager: physicsComponentManager}, 2)
+	renderSystemManager.Add(&roverRenderSystem{Context: engineCtx, roverCollection: roverCollection, physicsComponentManager: physicsComponentManager}, 2)
 	renderSystemManager.Add(&npcRenderSystem{Context: engineCtx, npcCollection: npcCollection, physicsComponentManager: physicsComponentManager}, 2)
 
 	player := entityManager.Create()
 	tagManager.SetTag(player, "player")
 	physicsComponentManager.AddComponent(player, &physics.PhysicsComponent{Body: createPlayerBody()})
+
+	rover := entityManager.Create()
+	tagManager.SetTag(rover, "rover")
+	physicsComponentManager.AddComponent(rover, &physics.PhysicsComponent{Body: createRoverBody()})
 
 	npc := entityManager.Create()
 	groupManager.AddGroup(npc, "npc")
@@ -171,6 +178,19 @@ func createPlayerBody() *physics.Body {
 
 	playerBody.Position = math.Vector{rendering.DisplayWidth / 2, rendering.DisplayHeight / 2}
 	return playerBody
+}
+
+func createRoverBody() *physics.Body {
+	roverBody := physics.NewBody([]physics.Fixture{
+		physics.NewBasicFixture(
+			0, 0, 69, 123, // bounds
+			0.3, 0.2, // material
+			0, 0, // friction
+		),
+	})
+
+	roverBody.Position = math.Vector{rendering.DisplayWidth / 4, rendering.DisplayHeight / 4}
+	return roverBody
 }
 
 func createNPCBody() *physics.Body {

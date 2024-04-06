@@ -11,64 +11,74 @@ import (
 	"github.com/go-gl/glfw/v3.2/glfw"
 )
 
-type playerMovementSystem struct {
+type roverMovementSystem struct {
 	*engine.Context
-	playerCollection        *entity.Collection
+	roverCollection         *entity.Collection
 	physicsComponentManager *component.TypedManager[*physics.PhysicsComponent, physics.PhysicsComponentType]
 }
 
-func (s *playerMovementSystem) Init() {}
-func (s *playerMovementSystem) Exit() {}
+func (s *roverMovementSystem) Init() {}
+func (s *roverMovementSystem) Exit() {}
 
-func (g *playerMovementSystem) Process(elapsedMs int64) {
-	if controllingRover {
+// TODO - deglobalize
+var controllingRover = false
+
+func (g *roverMovementSystem) Process(elapsedMs int64) {
+	if g.Keyboard.IsKeyNewlyDown(glfw.KeyR) {
+		controllingRover = !controllingRover
+	}
+	if !controllingRover {
 		return
 	}
 
-	playerXDir := int64(0)
-	playerYDir := int64(0)
+	roverXDir := int64(0)
+	roverYDir := int64(0)
 	if g.Keyboard.IsKeyDown(glfw.KeyS) {
-		playerYDir++
+		roverYDir++
 	}
 	if g.Keyboard.IsKeyDown(glfw.KeyW) {
-		playerYDir--
+		roverYDir--
 	}
 	if g.Keyboard.IsKeyDown(glfw.KeyD) {
-		playerXDir++
+		roverXDir++
 	}
 	if g.Keyboard.IsKeyDown(glfw.KeyA) {
-		playerXDir--
+		roverXDir--
 	}
 
-	if g.Keyboard.IsKeyDown(glfw.KeyLeftShift) {
-		playerXDir *= 3
-		playerYDir *= 3
-	}
-
-	mx := g.Camera.Unprojectx(float32(g.Mouse.X()))
-	my := g.Camera.UnprojectY(float32(g.Mouse.Y()))
-
-	for _, entity := range g.playerCollection.Entities() {
+	for _, entity := range g.roverCollection.Entities() {
 		component, ok := g.physicsComponentManager.GetComponent(entity)
 		if !ok {
 			continue
 		}
 
-		angle := math.Atan232(my-component.Body.Position.Y, mx-component.Body.Position.X)
-		if angle < 0 {
-			angle = (2 * stdmath.Pi) - (-angle)
-		}
-
-		component.Body.SetOrient(angle)
+		// angle := math.Atan232(my-component.Body.Position.Y, mx-component.Body.Position.X)
+		// if angle < 0 {
+		// 	angle = (2 * stdmath.Pi) - (-angle)
+		// }
+		//
+		// 	component.Body.SetOrient(angle)
 
 		mod := float32(100) // TODO - why so slow?
-		if playerXDir != 0 || playerYDir != 0 {
+		if roverXDir != 0 {
+			dx := stdmath.Pi * float32(roverXDir) / 128
+			tireRotation, _ = math.Clamp(tireRotation+dx*2, -stdmath.Pi/6, stdmath.Pi/6)
+			component.Body.SetOrient(component.Body.Orient + dx)
+		} else {
+			if tireRotation > 0 {
+				tireRotation -= stdmath.Pi / 128
+			} else {
+				tireRotation += stdmath.Pi / 128
+			}
+		}
+
+		if roverYDir != 0 {
 			speed := float32(.35)
 			transitionSpeed := float32(4)
 
 			component.Body.LinearVelocity = component.Body.LinearVelocity.
 				Muls(1 - (float32(elapsedMs) / mod * transitionSpeed)).
-				Add(math.Vector{float32(playerXDir), float32(playerYDir)}).
+				Add(component.Body.Rotation.Mul(math.Vector{0, float32(roverYDir)})).
 				Muls(speed * float32(elapsedMs) / mod * transitionSpeed)
 		} else {
 			transitionSpeed := float32(8)
