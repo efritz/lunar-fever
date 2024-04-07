@@ -63,7 +63,10 @@ func (g *roverMovementSystem) Process(elapsedMs int64) {
 		if roverXDir != 0 {
 			dx := stdmath.Pi * float32(roverXDir) / 128
 			tireRotation, _ = math.Clamp(tireRotation+dx*2, -stdmath.Pi/6, stdmath.Pi/6)
-			component.Body.SetOrient(component.Body.Orient + dx)
+
+			if roverYDir != 0 {
+				component.Body.SetOrient(component.Body.Orient + dx)
+			}
 		} else {
 			if tireRotation > 0 {
 				tireRotation -= stdmath.Pi / 128
@@ -84,6 +87,7 @@ func (g *roverMovementSystem) Process(elapsedMs int64) {
 			transitionSpeed := float32(8)
 
 			component.Body.LinearVelocity = component.Body.LinearVelocity.Muls(1 - (float32(elapsedMs) / mod * transitionSpeed))
+			component.Body.AngularVelocity = component.Body.AngularVelocity * (1 - (float32(elapsedMs) / mod * transitionSpeed))
 		}
 	}
 }

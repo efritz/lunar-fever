@@ -74,6 +74,7 @@ func (g *playerMovementSystem) Process(elapsedMs int64) {
 			transitionSpeed := float32(8)
 
 			component.Body.LinearVelocity = component.Body.LinearVelocity.Muls(1 - (float32(elapsedMs) / mod * transitionSpeed))
+			component.Body.AngularVelocity = component.Body.AngularVelocity * (1 - (float32(elapsedMs) / mod * transitionSpeed))
 		}
 	}
 }
