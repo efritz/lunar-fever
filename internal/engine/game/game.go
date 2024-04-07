@@ -25,8 +25,8 @@ type Game struct {
 func New(delegate Delegate) *Game {
 	return &Game{
 		slowUpdateThreshold: 20,
-		isFixedTimeStep:     false,
-		targetElapsedTimeMs: 1000 / 60,
+		isFixedTimeStep:     true,
+		targetElapsedTimeMs: 1000 / 120,
 		alwaysUpdate:        true,
 		alwaysRender:        true,
 		delegate:            delegate,
