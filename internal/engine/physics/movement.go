@@ -77,6 +77,10 @@ func (d *PhysicsComponentSystemDelegate) Process(entity entity.Entity, elapsedMs
 	body.Position = body.Position.Add(body.LinearVelocity.Muls(float32(elapsedMs)))
 	body.SetOrient(body.Orient + body.AngularVelocity*float32(elapsedMs))
 
+	decayRate := float32(0.99)
+	body.LinearVelocity = body.LinearVelocity.Muls(decayRate)
+	body.AngularVelocity = body.AngularVelocity * decayRate
+
 	// TODO - only if position or orient actually changed
 	d.entityMovedEventManager.Dispatch(EntityMovedEvent{entity})
 
