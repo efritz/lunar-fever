@@ -61,11 +61,11 @@ func (g *roverMovementSystem) Process(elapsedMs int64) {
 
 		mod := float32(100) // TODO - why so slow?
 		if roverXDir != 0 {
-			dx := stdmath.Pi * float32(roverXDir) / 128
+			dx := stdmath.Pi * float32(roverXDir) / (128 + 64)
 			tireRotation, _ = math.Clamp(tireRotation+dx*2, -stdmath.Pi/6, stdmath.Pi/6)
 
 			if roverYDir != 0 {
-				component.Body.SetOrient(component.Body.Orient + dx)
+				component.Body.SetOrient(component.Body.Orient + dx*-float32(roverYDir))
 			}
 		} else {
 			if tireRotation > 0 {
