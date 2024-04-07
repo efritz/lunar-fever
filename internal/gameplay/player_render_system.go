@@ -57,15 +57,15 @@ func (s *playerRenderSystem) Process(elapsedMs int64) {
 			continue
 		}
 
-		x1, y1, x2, y2 := component.Body.CoverBound()
+		// x1, y1, x2, y2 := component.Body.CoverBound()
+		// w := x2 - x1
+		// h := y2 - y1
+		// s.SpriteBatch.Draw(s.emptyTexture, x1, y1, w, h, rendering.WithColor(rendering.Color{1, 0, 1, .35}))
+
+		x1, y1, x2, y2 := component.Body.NonorientedBound()
 		w := x2 - x1
 		h := y2 - y1
-		s.SpriteBatch.Draw(s.emptyTexture, x1, y1, w, h, rendering.WithColor(rendering.Color{1, 0, 1, .35}))
-
-		x1, y1, x2, y2 = component.Body.NonorientedBound()
-		w = x2 - x1
-		h = y2 - y1
-		s.SpriteBatch.Draw(s.emptyTexture, x1, y1, w, h, rendering.WithColor(rendering.Color{1, 1, 0, .35}), rendering.WithRotation(component.Body.Orient), rendering.WithOrigin(w/2, h/2))
+		// s.SpriteBatch.Draw(s.emptyTexture, x1, y1, w, h, rendering.WithColor(rendering.Color{1, 1, 0, .35}), rendering.WithRotation(component.Body.Orient), rendering.WithOrigin(w/2, h/2))
 		d := -float32(stdmath.Pi / 2)
 		s.SpriteBatch.Draw(s.runAtlases[int(animationIndex)%len(s.runAtlases)], x1, y1, w, h, rendering.WithRotation(component.Body.Orient+d), rendering.WithOrigin(w/2, h/2))
 		s.SpriteBatch.Draw(s.headAtlas, x1, y1, w, h, rendering.WithRotation(component.Body.Orient-d), rendering.WithOrigin(w/2, h/2))

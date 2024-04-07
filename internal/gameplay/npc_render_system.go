@@ -32,11 +32,10 @@ func (s *npcRenderSystem) Process(elapsedMs int64) {
 		}
 		body := component.Body
 
-		x1, y1, x2, y2 := body.CoverBound()
-		w := x2 - x1
-		h := y2 - y1
-
-		s.SpriteBatch.Draw(s.texture, x1, y1, w, h, rendering.WithColor(rendering.Color{1, 1, 0, 0.5}))
+		// x1, y1, x2, y2 := body.CoverBound()
+		// w := x2 - x1
+		// h := y2 - y1
+		// s.SpriteBatch.Draw(s.texture, x1, y1, w, h, rendering.WithColor(rendering.Color{1, 1, 0, 0.5}))
 
 		for _, fixture := range body.Fixtures {
 			for i := range fixture.Vertices {

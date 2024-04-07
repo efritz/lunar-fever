@@ -47,12 +47,12 @@ func (s *roverRenderSystem) Process(elapsedMs int64) {
 		w := x02 - x01
 		h := y02 - y01
 
-		s.SpriteBatch.Draw(s.emptyTexture, x01, y01, w, h, rendering.WithColor(rendering.Color{1, 0, 1, .35}))
+		// s.SpriteBatch.Draw(s.emptyTexture, x01, y01, w, h, rendering.WithColor(rendering.Color{1, 0, 1, .35}))
 
 		x1, y1, x2, y2 := component.Body.NonorientedBound()
 		w = x2 - x1
 		h = y2 - y1
-		s.SpriteBatch.Draw(s.emptyTexture, x1, y1, w, h, rendering.WithColor(rendering.Color{1, 1, 0, .35}), rendering.WithRotation(component.Body.Orient), rendering.WithOrigin(w/2, h/2))
+		// s.SpriteBatch.Draw(s.emptyTexture, x1, y1, w, h, rendering.WithColor(rendering.Color{1, 1, 0, .35}), rendering.WithRotation(component.Body.Orient), rendering.WithOrigin(w/2, h/2))
 
 		w2 := float32(177)
 		h2 := float32(45)
