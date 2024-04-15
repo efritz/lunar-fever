@@ -87,6 +87,72 @@ func NewGameplay(engineCtx *engine.Context) view.View {
 	groupManager.AddGroup(npc, "physics")
 	physicsComponentManager.AddComponent(npc, &physics.PhysicsComponent{Body: createNPCBody()})
 
+	{
+		for i := 0; i < tileMap.height; i++ {
+			for j := 0; j < tileMap.width; j++ {
+				if tileMap.GetBit(i, j, INTERIOR_WALL_N_BIT) {
+					body := physics.NewBody([]physics.Fixture{
+						physics.NewBasicFixture(
+							0, 0, 32, 2, // bounds
+							0.0, 0.5, // material
+							0, 0, // friction
+						),
+					})
+					body.Position = math.Vector{float32(j*64) + 32, float32(i*64) + 1}
+
+					wall := entityManager.Create()
+					groupManager.AddGroup(wall, "physics")
+					physicsComponentManager.AddComponent(wall, &physics.PhysicsComponent{Body: body})
+				}
+
+				if tileMap.GetBit(i, j, INTERIOR_WALL_S_BIT) {
+					body := physics.NewBody([]physics.Fixture{
+						physics.NewBasicFixture(
+							0, 0, 32, 2, // bounds
+							0.0, 0.5, // material
+							0, 0, // friction
+						),
+					})
+					body.Position = math.Vector{float32(j*64) + 32, float32(i*64) + 64 - 1}
+
+					wall := entityManager.Create()
+					groupManager.AddGroup(wall, "physics")
+					physicsComponentManager.AddComponent(wall, &physics.PhysicsComponent{Body: body})
+				}
+
+				if tileMap.GetBit(i, j, INTERIOR_WALL_W_BIT) {
+					body := physics.NewBody([]physics.Fixture{
+						physics.NewBasicFixture(
+							0, 0, 2, 32, // bounds
+							0.0, 0.5, // material
+							0, 0, // friction
+						),
+					})
+					body.Position = math.Vector{float32(j*64) + 1, float32(i*64) + 32}
+
+					wall := entityManager.Create()
+					groupManager.AddGroup(wall, "physics")
+					physicsComponentManager.AddComponent(wall, &physics.PhysicsComponent{Body: body})
+				}
+
+				if tileMap.GetBit(i, j, INTERIOR_WALL_E_BIT) {
+					body := physics.NewBody([]physics.Fixture{
+						physics.NewBasicFixture(
+							0, 0, 2, 32, // bounds
+							0.0, 0.5, // material
+							0, 0, // friction
+						),
+					})
+					body.Position = math.Vector{float32(j*64) + 64 - 1, float32(i*64) + 32}
+
+					wall := entityManager.Create()
+					groupManager.AddGroup(wall, "physics")
+					physicsComponentManager.AddComponent(wall, &physics.PhysicsComponent{Body: body})
+				}
+			}
+		}
+	}
+
 	return &Gameplay{
 		Context:                 engineCtx,
 		updateSystemManager:     updateSystemManager,
