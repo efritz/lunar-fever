@@ -247,7 +247,7 @@ func createPlayerBody() *physics.Body {
 		),
 	})
 
-	playerBody.Position = math.Vector{rendering.DisplayWidth / 2, rendering.DisplayHeight / 2}
+	playerBody.Position = math.Vector{rendering.DisplayWidth / 2, 0}
 	return playerBody
 }
 
