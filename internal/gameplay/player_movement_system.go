@@ -59,17 +59,18 @@ func (g *playerMovementSystem) Process(elapsedMs int64) {
 			angle = (2 * stdmath.Pi) - (-angle)
 		}
 
-		component.Body.SetOrient(angle)
+		if component.Body.Orient != angle {
+			component.Body.SetOrient(angle)
+		}
 
-		mod := float32(100) // TODO - why so slow?
+		mod := float32(1000)
 		if playerXDir != 0 || playerYDir != 0 {
 			speed := float32(.35)
 			transitionSpeed := float32(4)
 
 			component.Body.LinearVelocity = component.Body.LinearVelocity.
 				Muls(1 - (float32(elapsedMs) / mod * transitionSpeed)).
-				Add(math.Vector{float32(playerXDir), float32(playerYDir)}).
-				Muls(speed * float32(elapsedMs) / mod * transitionSpeed)
+				Add(math.Vector{float32(playerXDir), float32(playerYDir)}.Muls(speed * float32(elapsedMs) / mod * transitionSpeed))
 		} else {
 			transitionSpeed := float32(8)
 

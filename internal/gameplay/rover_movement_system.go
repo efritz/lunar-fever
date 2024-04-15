@@ -59,7 +59,7 @@ func (g *roverMovementSystem) Process(elapsedMs int64) {
 		//
 		// 	component.Body.SetOrient(angle)
 
-		mod := float32(100) // TODO - why so slow?
+		mod := float32(1000)
 		if roverXDir != 0 {
 			dx := stdmath.Pi * float32(roverXDir) / (128 + 64)
 			tireRotation, _ = math.Clamp(tireRotation+dx*2, -stdmath.Pi/6, stdmath.Pi/6)
@@ -81,8 +81,8 @@ func (g *roverMovementSystem) Process(elapsedMs int64) {
 
 			component.Body.LinearVelocity = component.Body.LinearVelocity.
 				Muls(1 - (float32(elapsedMs) / mod * transitionSpeed)).
-				Add(component.Body.Rotation.Mul(math.Vector{0, float32(roverYDir)})).
-				Muls(speed * float32(elapsedMs) / mod * transitionSpeed)
+				Add(component.Body.Rotation.Mul(math.Vector{0, float32(roverYDir)}).
+					Muls(speed * float32(elapsedMs) / mod * transitionSpeed))
 		} else {
 			transitionSpeed := float32(8)
 
