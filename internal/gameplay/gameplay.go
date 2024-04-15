@@ -43,6 +43,7 @@ func NewGameplay(engineCtx *engine.Context) view.View {
 	playerCollection := entity.NewCollection(tag.NewEntityMatcher(tagManager, "player"), eventManager)
 	roverCollection := entity.NewCollection(tag.NewEntityMatcher(tagManager, "rover"), eventManager)
 	npcCollection := entity.NewCollection(group.NewEntityMatcher(groupManager, "npc"), eventManager)
+	physicsCollection := entity.NewCollection(group.NewEntityMatcher(groupManager, "physics"), eventManager)
 	physicsComponentManager := component.NewTypedManager[*physics.PhysicsComponent, physics.PhysicsComponentType](componentManager, eventManager)
 	director := &CameraDirector{Context: engineCtx}
 
@@ -69,17 +70,21 @@ func NewGameplay(engineCtx *engine.Context) view.View {
 	renderSystemManager.Add(&playerRenderSystem{Context: engineCtx, playerCollection: playerCollection, physicsComponentManager: physicsComponentManager}, 2)
 	renderSystemManager.Add(&roverRenderSystem{Context: engineCtx, roverCollection: roverCollection, physicsComponentManager: physicsComponentManager}, 2)
 	renderSystemManager.Add(&npcRenderSystem{Context: engineCtx, npcCollection: npcCollection, physicsComponentManager: physicsComponentManager}, 2)
+	renderSystemManager.Add(&physicsRenderSystem{Context: engineCtx, entityCollection: physicsCollection, physicsComponentManager: physicsComponentManager}, 3)
 
 	player := entityManager.Create()
 	tagManager.SetTag(player, "player")
+	groupManager.AddGroup(player, "physics")
 	physicsComponentManager.AddComponent(player, &physics.PhysicsComponent{Body: createPlayerBody()})
 
 	rover := entityManager.Create()
 	tagManager.SetTag(rover, "rover")
+	groupManager.AddGroup(rover, "physics")
 	physicsComponentManager.AddComponent(rover, &physics.PhysicsComponent{Body: createRoverBody()})
 
 	npc := entityManager.Create()
 	groupManager.AddGroup(npc, "npc")
+	groupManager.AddGroup(npc, "physics")
 	physicsComponentManager.AddComponent(npc, &physics.PhysicsComponent{Body: createNPCBody()})
 
 	return &Gameplay{
