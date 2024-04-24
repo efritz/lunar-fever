@@ -77,15 +77,15 @@ func NewGameplay(engineCtx *engine.Context) view.View {
 	groupManager.AddGroup(player, "physics")
 	physicsComponentManager.AddComponent(player, &physics.PhysicsComponent{Body: createPlayerBody()})
 
-	// rover := entityManager.Create()
-	// tagManager.SetTag(rover, "rover")
-	// groupManager.AddGroup(rover, "physics")
-	// physicsComponentManager.AddComponent(rover, &physics.PhysicsComponent{Body: createRoverBody()})
+	rover := entityManager.Create()
+	tagManager.SetTag(rover, "rover")
+	groupManager.AddGroup(rover, "physics")
+	physicsComponentManager.AddComponent(rover, &physics.PhysicsComponent{Body: createRoverBody()})
 
-	// npc := entityManager.Create()
-	// groupManager.AddGroup(npc, "npc")
-	// groupManager.AddGroup(npc, "physics")
-	// physicsComponentManager.AddComponent(npc, &physics.PhysicsComponent{Body: createNPCBody()})
+	npc := entityManager.Create()
+	groupManager.AddGroup(npc, "npc")
+	groupManager.AddGroup(npc, "physics")
+	physicsComponentManager.AddComponent(npc, &physics.PhysicsComponent{Body: createNPCBody()})
 
 	{
 		for i := 0; i < tileMap.height; i++ {
