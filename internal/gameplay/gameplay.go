@@ -57,12 +57,12 @@ func NewGameplay(engineCtx *engine.Context) view.View {
 	}
 
 	updateSystemManager := system.NewManager()
+	updateSystemManager.Add(physics.NewPhysicsComponentSystem(eventManager, componentManager), 0)
+	updateSystemManager.Add(physics.NewCollisionResolution(eventManager, componentManager), 0)
 	updateSystemManager.Add(&playerMovementSystem{Context: engineCtx, playerCollection: playerCollection, physicsComponentManager: physicsComponentManager}, 0)
 	updateSystemManager.Add(&roverMovementSystem{Context: engineCtx, roverCollection: roverCollection, physicsComponentManager: physicsComponentManager}, 0)
 	updateSystemManager.Add(&cameraMovementSystem{Context: engineCtx}, 0)
 	updateSystemManager.Add(director, 0)
-	updateSystemManager.Add(physics.NewPhysicsComponentSystem(eventManager, componentManager), 0)
-	updateSystemManager.Add(physics.NewCollisionResolution(eventManager, componentManager), 0)
 
 	renderSystemManager := system.NewManager()
 	renderSystemManager.Add(&regolithRenderSystem{Context: engineCtx}, 0)
