@@ -7,6 +7,7 @@ import (
 )
 
 type Body struct {
+	Name            string
 	Fixtures        []Fixture
 	inverseMass     float32
 	inverseInertia  float32
@@ -19,7 +20,7 @@ type Body struct {
 	torque          float32
 }
 
-func NewBody(fixtures []Fixture) *Body {
+func NewBody(name string, fixtures []Fixture) *Body {
 	mass := float32(0)
 	inertia := float32(0)
 	centroid := math.Vector{}
@@ -78,6 +79,7 @@ func NewBody(fixtures []Fixture) *Body {
 	}
 
 	return &Body{
+		Name:           name,
 		Fixtures:       fixtures,
 		inverseMass:    inverseMass,
 		inverseInertia: inverseInertia,

@@ -77,21 +77,21 @@ func NewGameplay(engineCtx *engine.Context) view.View {
 	groupManager.AddGroup(player, "physics")
 	physicsComponentManager.AddComponent(player, &physics.PhysicsComponent{Body: createPlayerBody()})
 
-	rover := entityManager.Create()
-	tagManager.SetTag(rover, "rover")
-	groupManager.AddGroup(rover, "physics")
-	physicsComponentManager.AddComponent(rover, &physics.PhysicsComponent{Body: createRoverBody()})
+	// rover := entityManager.Create()
+	// tagManager.SetTag(rover, "rover")
+	// groupManager.AddGroup(rover, "physics")
+	// physicsComponentManager.AddComponent(rover, &physics.PhysicsComponent{Body: createRoverBody()})
 
-	npc := entityManager.Create()
-	groupManager.AddGroup(npc, "npc")
-	groupManager.AddGroup(npc, "physics")
-	physicsComponentManager.AddComponent(npc, &physics.PhysicsComponent{Body: createNPCBody()})
+	// npc := entityManager.Create()
+	// groupManager.AddGroup(npc, "npc")
+	// groupManager.AddGroup(npc, "physics")
+	// physicsComponentManager.AddComponent(npc, &physics.PhysicsComponent{Body: createNPCBody()})
 
 	{
 		for i := 0; i < tileMap.height; i++ {
 			for j := 0; j < tileMap.width; j++ {
 				if tileMap.GetBit(i, j, INTERIOR_WALL_N_BIT) {
-					body := physics.NewBody([]physics.Fixture{
+					body := physics.NewBody("wall", []physics.Fixture{
 						physics.NewBasicFixture(
 							0, 0, 32, 2, // bounds
 							0.0, 0.5, // material
@@ -106,7 +106,7 @@ func NewGameplay(engineCtx *engine.Context) view.View {
 				}
 
 				if tileMap.GetBit(i, j, INTERIOR_WALL_S_BIT) {
-					body := physics.NewBody([]physics.Fixture{
+					body := physics.NewBody("wall", []physics.Fixture{
 						physics.NewBasicFixture(
 							0, 0, 32, 2, // bounds
 							0.0, 0.5, // material
@@ -121,7 +121,7 @@ func NewGameplay(engineCtx *engine.Context) view.View {
 				}
 
 				if tileMap.GetBit(i, j, INTERIOR_WALL_W_BIT) {
-					body := physics.NewBody([]physics.Fixture{
+					body := physics.NewBody("wall", []physics.Fixture{
 						physics.NewBasicFixture(
 							0, 0, 2, 32, // bounds
 							0.0, 0.5, // material
@@ -136,7 +136,7 @@ func NewGameplay(engineCtx *engine.Context) view.View {
 				}
 
 				if tileMap.GetBit(i, j, INTERIOR_WALL_E_BIT) {
-					body := physics.NewBody([]physics.Fixture{
+					body := physics.NewBody("wall", []physics.Fixture{
 						physics.NewBasicFixture(
 							0, 0, 2, 32, // bounds
 							0.0, 0.5, // material
@@ -239,7 +239,7 @@ func (g *Gameplay) IsOverlay() bool {
 //
 
 func createPlayerBody() *physics.Body {
-	playerBody := physics.NewBody([]physics.Fixture{
+	playerBody := physics.NewBody("player", []physics.Fixture{
 		physics.NewBasicFixture(
 			0, 0, 48, 48, // bounds
 			0.3, 0.2, // material
@@ -252,7 +252,7 @@ func createPlayerBody() *physics.Body {
 }
 
 func createRoverBody() *physics.Body {
-	roverBody := physics.NewBody([]physics.Fixture{
+	roverBody := physics.NewBody("rover", []physics.Fixture{
 		physics.NewBasicFixture(
 			0, 0, 69, 123, // bounds
 			0.3, 0.2, // material
@@ -285,7 +285,7 @@ func createNPCBody() *physics.Body {
 		vectors[4] = math.Vector{tx - hw, ty - hh}
 	}
 
-	return physics.NewBody([]physics.Fixture{
+	return physics.NewBody("npc", []physics.Fixture{
 		physics.NewFixture(points1, 0.1, 0.1, 0, 0),
 		physics.NewFixture(points2, 0.1, 0.1, 0, 0),
 		physics.NewFixture(points3, 0.4, 0.1, 0, 0),
