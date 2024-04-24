@@ -155,7 +155,7 @@ func setTerminus(tileMap *TileMap, row, col int) {
 }
 
 func (r *BaseRenderer) Render(x1, y1, x2, y2 float32) {
-	tileMap := setAestheticBits(r.tileMap)
+	tileMap := setAestheticBits(r.tileMap) // TODO - cache
 
 	r.spriteBatch.Begin()
 
