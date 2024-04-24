@@ -67,7 +67,7 @@ func (d *PhysicsComponentSystemDelegate) Process(entity entity.Entity, elapsedMs
 
 	body := physicsComponent.Body
 
-	if body.inverseInertia == 0 {
+	if body.inverseMass == 0 {
 		return
 	}
 

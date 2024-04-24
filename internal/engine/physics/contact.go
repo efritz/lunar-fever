@@ -81,12 +81,12 @@ func newContact(ref Fixture, refBody *Body, inc Fixture, incBody *Body, refIndex
 	d2 := refFaceNormal.Dot(incv2) - refFaceNormal.Dot(refv2)
 
 	if d1 <= 0 {
-		penetration += d1
+		penetration += -d1
 		contacts = append(contacts, incv1)
 	}
 
 	if d2 <= 0 {
-		penetration += d2
+		penetration += -d2
 		contacts = append(contacts, incv2)
 	}
 
@@ -256,7 +256,7 @@ func (c Contact) Correct() {
 
 	correction := c.penetration / (c.body1.inverseMass + c.body2.inverseMass) * penetrationCorrection
 	c.body1.Position = c.body1.Position.Add(c.normal.Muls(-c.body1.inverseMass * correction))
-	c.body2.Position = c.body2.Position.Add(c.normal.Muls(+c.body1.inverseMass * correction))
+	c.body2.Position = c.body2.Position.Add(c.normal.Muls(+c.body2.inverseMass * correction))
 }
 
 func getRelativeVelocity(body1, body2 *Body, r1, r2 math.Vector) math.Vector {
