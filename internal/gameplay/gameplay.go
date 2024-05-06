@@ -72,86 +72,10 @@ func NewGameplay(engineCtx *engine.Context) view.View {
 	renderSystemManager.Add(&npcRenderSystem{Context: engineCtx, npcCollection: npcCollection, physicsComponentManager: physicsComponentManager}, 2)
 	renderSystemManager.Add(&physicsRenderSystem{Context: engineCtx, entityCollection: physicsCollection, physicsComponentManager: physicsComponentManager}, 3)
 
-	player := entityManager.Create()
-	tagManager.SetTag(player, "player")
-	groupManager.AddGroup(player, "physics")
-	physicsComponentManager.AddComponent(player, &physics.PhysicsComponent{Body: createPlayerBody()})
-
-	rover := entityManager.Create()
-	tagManager.SetTag(rover, "rover")
-	groupManager.AddGroup(rover, "physics")
-	physicsComponentManager.AddComponent(rover, &physics.PhysicsComponent{Body: createRoverBody()})
-
-	npc := entityManager.Create()
-	groupManager.AddGroup(npc, "npc")
-	groupManager.AddGroup(npc, "physics")
-	physicsComponentManager.AddComponent(npc, &physics.PhysicsComponent{Body: createNPCBody()})
-
-	{
-		for i := 0; i < tileMap.height; i++ {
-			for j := 0; j < tileMap.width; j++ {
-				if tileMap.GetBit(i, j, INTERIOR_WALL_N_BIT) {
-					body := physics.NewBody("wall", []physics.Fixture{
-						physics.NewBasicFixture(
-							0, 0, 32, 2, // bounds
-							0.0, 0.5, // material
-							0, 0, // friction
-						),
-					})
-					body.Position = math.Vector{float32(j*64) + 32, float32(i*64) + 1}
-
-					wall := entityManager.Create()
-					groupManager.AddGroup(wall, "physics")
-					physicsComponentManager.AddComponent(wall, &physics.PhysicsComponent{Body: body})
-				}
-
-				if tileMap.GetBit(i, j, INTERIOR_WALL_S_BIT) {
-					body := physics.NewBody("wall", []physics.Fixture{
-						physics.NewBasicFixture(
-							0, 0, 32, 2, // bounds
-							0.0, 0.5, // material
-							0, 0, // friction
-						),
-					})
-					body.Position = math.Vector{float32(j*64) + 32, float32(i*64) + 64 - 1}
-
-					wall := entityManager.Create()
-					groupManager.AddGroup(wall, "physics")
-					physicsComponentManager.AddComponent(wall, &physics.PhysicsComponent{Body: body})
-				}
-
-				if tileMap.GetBit(i, j, INTERIOR_WALL_W_BIT) {
-					body := physics.NewBody("wall", []physics.Fixture{
-						physics.NewBasicFixture(
-							0, 0, 2, 32, // bounds
-							0.0, 0.5, // material
-							0, 0, // friction
-						),
-					})
-					body.Position = math.Vector{float32(j*64) + 1, float32(i*64) + 32}
-
-					wall := entityManager.Create()
-					groupManager.AddGroup(wall, "physics")
-					physicsComponentManager.AddComponent(wall, &physics.PhysicsComponent{Body: body})
-				}
-
-				if tileMap.GetBit(i, j, INTERIOR_WALL_E_BIT) {
-					body := physics.NewBody("wall", []physics.Fixture{
-						physics.NewBasicFixture(
-							0, 0, 2, 32, // bounds
-							0.0, 0.5, // material
-							0, 0, // friction
-						),
-					})
-					body.Position = math.Vector{float32(j*64) + 64 - 1, float32(i*64) + 32}
-
-					wall := entityManager.Create()
-					groupManager.AddGroup(wall, "physics")
-					physicsComponentManager.AddComponent(wall, &physics.PhysicsComponent{Body: body})
-				}
-			}
-		}
-	}
+	createPlayer(entityManager, tagManager, groupManager, physicsComponentManager)
+	createRover(entityManager, tagManager, groupManager, physicsComponentManager)
+	createNPC(entityManager, groupManager, physicsComponentManager)
+	createWalls(entityManager, groupManager, physicsComponentManager, tileMap)
 
 	return &Gameplay{
 		Context:                 engineCtx,
@@ -233,61 +157,4 @@ func (g *Gameplay) Render(elapsedMs int64) {
 
 func (g *Gameplay) IsOverlay() bool {
 	return false
-}
-
-//
-//
-
-func createPlayerBody() *physics.Body {
-	playerBody := physics.NewBody("player", []physics.Fixture{
-		physics.NewBasicFixture(
-			0, 0, 48, 48, // bounds
-			0.3, 0.2, // material
-			0, 0, // friction
-		),
-	})
-
-	playerBody.Position = math.Vector{rendering.DisplayWidth / 2, 0}
-	return playerBody
-}
-
-func createRoverBody() *physics.Body {
-	roverBody := physics.NewBody("rover", []physics.Fixture{
-		physics.NewBasicFixture(
-			0, 0, 69, 123, // bounds
-			20, 0.5, // material
-			0, 0, // friction
-		),
-	})
-
-	roverBody.Position = math.Vector{rendering.DisplayWidth / 4, rendering.DisplayHeight / 4}
-	return roverBody
-}
-
-func createNPCBody() *physics.Body {
-	points1 := make([]math.Vector, 5)
-	points2 := make([]math.Vector, 5)
-	points3 := make([]math.Vector, 5)
-
-	tx := float32(40)
-	ty := float32(40)
-	hw := float32(32)
-	hh := float32(48)
-
-	for _, vectors := range [][]math.Vector{points1, points2, points3} {
-		tx += hw * 2.25
-		ty += hh / 2
-
-		vectors[0] = math.Vector{tx, ty + hh*2}
-		vectors[1] = math.Vector{tx + hw, ty - hh}
-		vectors[2] = math.Vector{tx - hw, ty + hh}
-		vectors[3] = math.Vector{tx + hw, ty + hh}
-		vectors[4] = math.Vector{tx - hw, ty - hh}
-	}
-
-	return physics.NewBody("npc", []physics.Fixture{
-		physics.NewFixture(points1, 0.1, 0.1, 0, 0),
-		physics.NewFixture(points2, 0.1, 0.1, 0, 0),
-		physics.NewFixture(points3, 0.4, 0.1, 0, 0),
-	})
 }
