@@ -131,12 +131,19 @@ func (g *Gameplay) Update(elapsedMs int64, hasFocus bool) {
 	}
 
 	// Explosion camera
+	// if g.Keyboard.IsKeyNewlyDown(glfw.KeyP) {
+	// 	g.director.AddShake(5)
+	// }
+
+	// Toggle debug flag
 	if g.Keyboard.IsKeyNewlyDown(glfw.KeyP) {
-		g.director.AddShake(5)
+		debug = !debug
 	}
 
 	g.updateSystemManager.Process(elapsedMs)
 }
+
+var debug = false
 
 func (g *Gameplay) Render(elapsedMs int64) {
 	g.renderMss = append(g.renderMss, elapsedMs)
@@ -150,13 +157,15 @@ func (g *Gameplay) Render(elapsedMs int64) {
 	g.renderSystemManager.Process(elapsedMs)
 	g.SpriteBatch.SetViewMatrix(math.IdentityMatrix)
 
-	font.Printf(
-		rendering.DisplayWidth-200,
-		30,
-		fmt.Sprintf("%d ups, %d fps", len(g.updateMss), len(g.renderMss)),
-		rendering.WithTextScale(0.5),
-		rendering.WithTextColor(rendering.Color{0, 0, 0, 1}),
-	)
+	if debug {
+		font.Printf(
+			rendering.DisplayWidth-200,
+			30,
+			fmt.Sprintf("%d ups, %d fps", len(g.updateMss), len(g.renderMss)),
+			rendering.WithTextScale(0.5),
+			rendering.WithTextColor(rendering.Color{0, 0, 0, 1}),
+		)
+	}
 }
 
 func (g *Gameplay) IsOverlay() bool {

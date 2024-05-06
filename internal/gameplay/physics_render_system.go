@@ -22,6 +22,10 @@ func (s *physicsRenderSystem) Init() {
 func (s *physicsRenderSystem) Exit() {}
 
 func (s *physicsRenderSystem) Process(elapsedMs int64) {
+	if !debug {
+		return
+	}
+
 	s.SpriteBatch.Begin()
 
 	for _, entity := range s.entityCollection.Entities() {
