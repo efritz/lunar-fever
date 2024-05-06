@@ -39,6 +39,10 @@ func (d *CollisionResolutionSystem) Process(elapsedMs int64) {
 			component1, _ := d.physicsComponentManager.GetComponent(entities[i])
 			component2, _ := d.physicsComponentManager.GetComponent(entities[j])
 
+			if component1.CollisionsDisabled || component2.CollisionsDisabled {
+				continue
+			}
+
 			body1 := component1.Body
 			body2 := component2.Body
 

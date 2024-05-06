@@ -8,7 +8,8 @@ import (
 )
 
 type PhysicsComponent struct {
-	Body *Body
+	Body               *Body
+	CollisionsDisabled bool
 }
 
 type PhysicsComponentType struct{}

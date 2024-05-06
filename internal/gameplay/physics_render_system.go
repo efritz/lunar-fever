@@ -26,7 +26,7 @@ func (s *physicsRenderSystem) Process(elapsedMs int64) {
 
 	for _, entity := range s.entityCollection.Entities() {
 		component, ok := s.physicsComponentManager.GetComponent(entity)
-		if !ok {
+		if !ok || component.CollisionsDisabled {
 			continue
 		}
 

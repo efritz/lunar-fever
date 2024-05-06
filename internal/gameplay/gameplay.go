@@ -45,6 +45,7 @@ func NewGameplay(engineCtx *engine.Context) view.View {
 	playerCollection := entity.NewCollection(tag.NewEntityMatcher(tagManager, "player"), eventManager)
 	roverCollection := entity.NewCollection(tag.NewEntityMatcher(tagManager, "rover"), eventManager)
 	npcCollection := entity.NewCollection(group.NewEntityMatcher(groupManager, "npc"), eventManager)
+	doorCollection := entity.NewCollection(group.NewEntityMatcher(groupManager, "door"), eventManager)
 	physicsCollection := entity.NewCollection(group.NewEntityMatcher(groupManager, "physics"), eventManager)
 	physicsComponentManager := component.NewTypedManager[*physics.PhysicsComponent, physics.PhysicsComponentType](componentManager, eventManager)
 	director := &CameraDirector{Context: engineCtx}
@@ -64,6 +65,7 @@ func NewGameplay(engineCtx *engine.Context) view.View {
 	updateSystemManager.Add(&playerMovementSystem{Context: engineCtx, playerCollection: playerCollection, physicsComponentManager: physicsComponentManager}, 0)
 	updateSystemManager.Add(&roverMovementSystem{Context: engineCtx, roverCollection: roverCollection, physicsComponentManager: physicsComponentManager}, 0)
 	updateSystemManager.Add(&cameraMovementSystem{Context: engineCtx}, 0)
+	updateSystemManager.Add(&doorOpenerSystem{Context: engineCtx, doorCollection: doorCollection, playerCollection: playerCollection, physicsComponentManager: physicsComponentManager}, 0)
 	updateSystemManager.Add(director, 0)
 
 	renderSystemManager := system.NewManager()
