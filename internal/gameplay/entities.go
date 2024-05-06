@@ -8,6 +8,7 @@ import (
 	"github.com/efritz/lunar-fever/internal/engine/ecs/entity/tag"
 	"github.com/efritz/lunar-fever/internal/engine/physics"
 	"github.com/efritz/lunar-fever/internal/engine/rendering"
+	"github.com/efritz/lunar-fever/internal/gameplay/maps"
 )
 
 func createPlayer(
@@ -93,7 +94,7 @@ func createWalls(
 	entityManager *entity.Manager,
 	groupManager *group.Manager,
 	physicsComponentManager *component.TypedManager[*physics.PhysicsComponent, physics.PhysicsComponentType],
-	tileMap *TileMap,
+	tileMap *maps.TileMap,
 ) {
 	type Options struct {
 		name    string
@@ -119,19 +120,19 @@ func createWalls(
 		physicsComponentManager.AddComponent(entity, &physics.PhysicsComponent{Body: body})
 	}
 
-	parametersByBit := map[TileBitIndex]Options{
-		INTERIOR_WALL_N_BIT: {"wall", 32, 2, +1, 32},
-		INTERIOR_WALL_S_BIT: {"wall", 32, 2, 64 - 1, 32},
-		INTERIOR_WALL_W_BIT: {"wall", 2, 32, 32, +1},
-		INTERIOR_WALL_E_BIT: {"wall", 2, 32, 32, 64 - 1},
-		DOOR_N_BIT:          {"door", 32, 2, +1, 32},
-		DOOR_S_BIT:          {"door", 32, 2, 64 - 1, 32},
-		DOOR_W_BIT:          {"door", 2, 32, 32, +1},
-		DOOR_E_BIT:          {"door", 2, 32, 32, 64 - 1},
+	parametersByBit := map[maps.TileBitIndex]Options{
+		maps.INTERIOR_WALL_N_BIT: {"wall", 32, 2, +1, 32},
+		maps.INTERIOR_WALL_S_BIT: {"wall", 32, 2, 64 - 1, 32},
+		maps.INTERIOR_WALL_W_BIT: {"wall", 2, 32, 32, +1},
+		maps.INTERIOR_WALL_E_BIT: {"wall", 2, 32, 32, 64 - 1},
+		maps.DOOR_N_BIT:          {"door", 32, 2, +1, 32},
+		maps.DOOR_S_BIT:          {"door", 32, 2, 64 - 1, 32},
+		maps.DOOR_W_BIT:          {"door", 2, 32, 32, +1},
+		maps.DOOR_E_BIT:          {"door", 2, 32, 32, 64 - 1},
 	}
 
-	for i := 0; i < tileMap.height; i++ {
-		for j := 0; j < tileMap.width; j++ {
+	for i := 0; i < tileMap.Height(); i++ {
+		for j := 0; j < tileMap.Width(); j++ {
 			for bit, opts := range parametersByBit {
 				if tileMap.GetBit(i, j, bit) {
 					build(i, j, opts)

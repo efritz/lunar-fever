@@ -1,20 +1,21 @@
-package gameplay
+package editor
 
 import (
 	"fmt"
-	"os"
 
 	"github.com/efritz/lunar-fever/internal/engine"
 	"github.com/efritz/lunar-fever/internal/engine/rendering"
 	"github.com/efritz/lunar-fever/internal/engine/view"
+	"github.com/efritz/lunar-fever/internal/gameplay/maps"
+	"github.com/efritz/lunar-fever/internal/gameplay/maps/loader"
 	"github.com/go-gl/glfw/v3.2/glfw"
 )
 
 type Editor struct {
 	*engine.Context
 	texture      rendering.Texture
-	tileMap      *TileMap // No need to store
-	baseRenderer *BaseRenderer
+	tileMap      *maps.TileMap // No need to store
+	baseRenderer *maps.BaseRenderer
 	executor     *MapCommandExecutor
 
 	x, y             int
@@ -30,27 +31,16 @@ func NewEditor(engineCtx *engine.Context) view.View {
 }
 
 func (e *Editor) Init() {
-	tm, err := readTileMap()
+	tm, err := loader.ReadTileMap()
 	if err != nil {
-		tm = NewTileMap(100, 100, 64)
+		tm = maps.NewTileMap(100, 100, 64)
 	}
 	e.tileMap = tm
 
 	e.texture = e.TextureLoader.Load("base").Region(7*32, 1*32, 32, 32)
-	e.baseRenderer = NewBaseRenderer(e.SpriteBatch, e.TextureLoader, e.tileMap)
+	e.baseRenderer = maps.NewBaseRenderer(e.SpriteBatch, e.TextureLoader, e.tileMap)
 	e.executor = NewMapCommandExecutor(e.tileMap)
 	e.selected = FLOOR_TOOL
-}
-
-const tempPath = "/Users/efritz/Desktop/map.dat"
-
-func readTileMap() (*TileMap, error) {
-	f, err := os.Open(tempPath)
-	if err != nil {
-		return nil, err
-	}
-	defer f.Close()
-	return ReadTileMap(f)
 }
 
 func (e *Editor) Exit() {}
@@ -127,14 +117,8 @@ func (e *Editor) Update(elapsedMs int64, hasFocus bool) {
 	// Save tile map
 
 	if e.Keyboard.IsKeyDown(glfw.KeyLeftSuper) && e.Keyboard.IsKeyNewlyDown(glfw.KeyS) {
-		f, err := os.OpenFile(tempPath, os.O_CREATE|os.O_WRONLY, 0644)
-		if err != nil {
-			panic(err)
-		}
-		defer f.Close()
-
-		if err := WriteTileMap(e.tileMap, f); err != nil {
-			panic(err)
+		if err := loader.Write(e.tileMap); err != nil {
+			panic(err.Error())
 		}
 	}
 }

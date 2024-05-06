@@ -1,4 +1,4 @@
-package gameplay
+package maps
 
 import (
 	"bufio"
@@ -41,7 +41,7 @@ const (
 	DOOR_W_BIT
 )
 
-var tileBitIndexes = []TileBitIndex{
+var TileBitIndexes = []TileBitIndex{
 	FLOOR_BIT,
 	HWALL_BIT,
 	VWALL_BIT,
@@ -132,6 +132,18 @@ func NewTileMap(width, height, gridSize int) *TileMap {
 		gridSize: gridSize,
 		data:     make([]int64, width*height),
 	}
+}
+
+func (m *TileMap) Width() int {
+	return m.width
+}
+
+func (m *TileMap) Height() int {
+	return m.height
+}
+
+func (m *TileMap) GridSize() int {
+	return m.gridSize
 }
 
 func (m *TileMap) GetBit(row, col int, bitIndex TileBitIndex) bool {

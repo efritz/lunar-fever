@@ -1,4 +1,9 @@
-package gameplay
+package editor
+
+import (
+	"github.com/efritz/lunar-fever/internal/gameplay/maps"
+	"github.com/efritz/lunar-fever/internal/gameplay/maps/editor/commands"
+)
 
 type Palette int
 
@@ -12,22 +17,22 @@ const (
 
 const MaxUndoStack = 100
 
-var factories = map[Palette][2]MapCommandFactory{
-	FLOOR_TOOL: {NewAddFloorMapCommandFactory(), NewRemoveFloorMapCommandFactory()},
-	HWALL_TOOL: {NewAddHorizontalWallMapCommandFactory(), NewRemoveHorizontalWallMapCommandFactory()},
-	VWALL_TOOL: {NewAddVerticalWallMapCommandFactory(), NewRemoveVerticalWallMapCommandFactory()},
-	HDOOR_TOOL: {NewAddHorizontalDoorMapCommandFactory(), NewRemoveHorizontalDoorMapCommandFactory()},
-	VDOOR_TOOL: {NewAddVerticalDoorMapCommandFactory(), NewRemoveVerticalDoorMapCommandFactory()},
+var factories = map[Palette][2]commands.MapCommandFactory{
+	FLOOR_TOOL: {commands.NewAddFloorMapCommandFactory(), commands.NewRemoveFloorMapCommandFactory()},
+	HWALL_TOOL: {commands.NewAddHorizontalWallMapCommandFactory(), commands.NewRemoveHorizontalWallMapCommandFactory()},
+	VWALL_TOOL: {commands.NewAddVerticalWallMapCommandFactory(), commands.NewRemoveVerticalWallMapCommandFactory()},
+	HDOOR_TOOL: {commands.NewAddHorizontalDoorMapCommandFactory(), commands.NewRemoveHorizontalDoorMapCommandFactory()},
+	VDOOR_TOOL: {commands.NewAddVerticalDoorMapCommandFactory(), commands.NewRemoveVerticalDoorMapCommandFactory()},
 }
 
 type MapCommandExecutor struct {
-	tileMap *TileMap
-	undoLog []MapCommand
-	redoLog []MapCommand
-	factory MapCommandFactory
+	tileMap *maps.TileMap
+	undoLog []commands.MapCommand
+	redoLog []commands.MapCommand
+	factory commands.MapCommandFactory
 }
 
-func NewMapCommandExecutor(tileMap *TileMap) *MapCommandExecutor {
+func NewMapCommandExecutor(tileMap *maps.TileMap) *MapCommandExecutor {
 	return &MapCommandExecutor{
 		tileMap: tileMap,
 	}
@@ -93,7 +98,7 @@ func (e *MapCommandExecutor) ClearUndoState() {
 	e.redoLog = nil
 }
 
-func (e *MapCommandExecutor) factoryFor(tile Palette, row, col int) MapCommandFactory {
+func (e *MapCommandExecutor) factoryFor(tile Palette, row, col int) commands.MapCommandFactory {
 	factory1 := factories[tile][0]
 	factory2 := factories[tile][1]
 

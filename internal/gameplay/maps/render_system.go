@@ -1,4 +1,4 @@
-package gameplay
+package maps
 
 import (
 	stdmath "math"
@@ -12,6 +12,13 @@ type baseRenderSystem struct {
 	*engine.Context
 	tileMap      *TileMap
 	baseRenderer *BaseRenderer
+}
+
+func NewBaseRenderSystem(engineCtx *engine.Context, tileMap *TileMap) *baseRenderSystem {
+	return &baseRenderSystem{
+		Context: engineCtx,
+		tileMap: tileMap,
+	}
 }
 
 func (s *baseRenderSystem) Init() {
@@ -42,9 +49,9 @@ func NewBaseRenderer(spriteBatch *rendering.SpriteBatch, textureLoader *renderin
 }
 
 func setAestheticBits(tileMap *TileMap) *TileMap {
-	m2 := NewTileMap(tileMap.width, tileMap.height, tileMap.gridSize)
-	for col := 0; col < tileMap.width; col++ {
-		for row := 0; row < tileMap.height; row++ {
+	m2 := NewTileMap(tileMap.Width(), tileMap.Height(), tileMap.GridSize())
+	for col := 0; col < tileMap.Width(); col++ {
+		for row := 0; row < tileMap.Height(); row++ {
 			m2.SetBits(row, col, tileMap.GetBits(row, col))
 		}
 	}
@@ -55,8 +62,8 @@ func setAestheticBits(tileMap *TileMap) *TileMap {
 }
 
 func setExternalWallTiles(tileMap *TileMap) {
-	for col := 0; col < tileMap.width; col++ {
-		for row := 0; row < tileMap.height; row++ {
+	for col := 0; col < tileMap.Width(); col++ {
+		for row := 0; row < tileMap.Height(); row++ {
 			if tileMap.GetBit(row, col, INTERIOR_WALL_N_BIT) && !tileMap.GetBit(row-1, col, FLOOR_BIT) {
 				tileMap.SetBit(row, col, EXTERIOR_WALL_N_BIT)
 			}
@@ -77,8 +84,8 @@ func setExternalWallTiles(tileMap *TileMap) {
 }
 
 func setCornerTiles(tileMap *TileMap) {
-	for col := 0; col < tileMap.width; col++ {
-		for row := 0; row < tileMap.height; row++ {
+	for col := 0; col < tileMap.Width(); col++ {
+		for row := 0; row < tileMap.Height(); row++ {
 			if tileMap.GetBit(row, col, EXTERIOR_WALL_N_BIT) && tileMap.GetBit(row, col, EXTERIOR_WALL_E_BIT) && !tileMap.GetBit(row, col+1, FLOOR_BIT) {
 				tileMap.SetBit(row, col, EXTERIOR_CORNER_CONVEX_NE_BIT)
 			}
@@ -113,8 +120,8 @@ func setCornerTiles(tileMap *TileMap) {
 		}
 	}
 
-	for col := 0; col < tileMap.width; col++ {
-		for row := 0; row < tileMap.height; row++ {
+	for col := 0; col < tileMap.Width(); col++ {
+		for row := 0; row < tileMap.Height(); row++ {
 			if tileMap.GetBit(row, col, INTERIOR_WALL_N_BIT) && !tileMap.GetBit(row, col+1, INTERIOR_WALL_N_BIT) && !tileMap.GetBit(row, col, EXTERIOR_WALL_E_BIT) {
 				setTerminus(tileMap, row, col)
 			}
@@ -162,12 +169,12 @@ func (r *BaseRenderer) Render(x1, y1, x2, y2 float32) {
 	startCol := math.Max(0, math.PrevMultiple(int(x1), 64)/64)
 	startRow := math.Max(0, math.PrevMultiple(int(y1), 64)/64)
 
-	endCol := math.Min(tileMap.width, math.NextMultiple(int(x2), 64)/64)
-	endRow := math.Min(tileMap.height, math.NextMultiple(int(y2), 64)/64)
+	endCol := math.Min(tileMap.Width(), math.NextMultiple(int(x2), 64)/64)
+	endRow := math.Min(tileMap.Height(), math.NextMultiple(int(y2), 64)/64)
 
 	for col := startCol; col < endCol; col++ {
 		for row := startRow; row < endRow; row++ {
-			for _, bitIndex := range tileBitIndexes {
+			for _, bitIndex := range TileBitIndexes {
 				baseTexture, ok := r.textures[bitIndex]
 				if !ok {
 					continue

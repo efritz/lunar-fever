@@ -6,6 +6,7 @@ import (
 
 	"github.com/efritz/lunar-fever/internal/engine"
 	"github.com/efritz/lunar-fever/internal/engine/view"
+	"github.com/efritz/lunar-fever/internal/gameplay/maps/editor"
 )
 
 func NewMainMenu(engineCtx *engine.Context) view.View {
@@ -46,7 +47,7 @@ type tileEditorMenuEntry struct {
 }
 
 func (e *tileEditorMenuEntry) OnSelect() {
-	Load(e.Context, NewEditor(e.Context), fakeLoader)
+	Load(e.Context, editor.NewEditor(e.Context), fakeLoader)
 }
 
 var fakeLoader = func() {

@@ -15,6 +15,8 @@ import (
 	"github.com/efritz/lunar-fever/internal/engine/physics"
 	"github.com/efritz/lunar-fever/internal/engine/rendering"
 	"github.com/efritz/lunar-fever/internal/engine/view"
+	"github.com/efritz/lunar-fever/internal/gameplay/maps"
+	"github.com/efritz/lunar-fever/internal/gameplay/maps/loader"
 	"github.com/go-gl/glfw/v3.2/glfw"
 )
 
@@ -47,13 +49,13 @@ func NewGameplay(engineCtx *engine.Context) view.View {
 	physicsComponentManager := component.NewTypedManager[*physics.PhysicsComponent, physics.PhysicsComponentType](componentManager, eventManager)
 	director := &CameraDirector{Context: engineCtx}
 
-	tileMap, err := readTileMap()
+	tileMap, err := loader.ReadTileMap()
 	if err != nil {
 		if !os.IsNotExist(err) {
 			panic(err)
 		}
 
-		tileMap = NewTileMap(100, 100, 64)
+		tileMap = maps.NewTileMap(100, 100, 64)
 	}
 
 	updateSystemManager := system.NewManager()
@@ -66,7 +68,7 @@ func NewGameplay(engineCtx *engine.Context) view.View {
 
 	renderSystemManager := system.NewManager()
 	renderSystemManager.Add(&regolithRenderSystem{Context: engineCtx}, 0)
-	renderSystemManager.Add(&baseRenderSystem{Context: engineCtx, tileMap: tileMap}, 1)
+	renderSystemManager.Add(maps.NewBaseRenderSystem(engineCtx, tileMap), 1)
 	renderSystemManager.Add(&playerRenderSystem{Context: engineCtx, playerCollection: playerCollection, physicsComponentManager: physicsComponentManager}, 2)
 	renderSystemManager.Add(&roverRenderSystem{Context: engineCtx, roverCollection: roverCollection, physicsComponentManager: physicsComponentManager}, 2)
 	renderSystemManager.Add(&npcRenderSystem{Context: engineCtx, npcCollection: npcCollection, physicsComponentManager: physicsComponentManager}, 2)
