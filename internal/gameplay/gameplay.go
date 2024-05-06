@@ -255,7 +255,7 @@ func createRoverBody() *physics.Body {
 	roverBody := physics.NewBody("rover", []physics.Fixture{
 		physics.NewBasicFixture(
 			0, 0, 69, 123, // bounds
-			0.3, 0.2, // material
+			20, 0.5, // material
 			0, 0, // friction
 		),
 	})
