@@ -6,7 +6,7 @@ import (
 	"github.com/efritz/lunar-fever/internal/gameplay/maps"
 )
 
-const tempPath = "/Users/efritz/Desktop/map.dat"
+const tempPath = "map.dat"
 
 func ReadTileMap() (*maps.TileMap, error) {
 	f, err := os.Open(tempPath)
