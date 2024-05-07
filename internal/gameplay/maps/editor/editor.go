@@ -38,7 +38,7 @@ func (e *Editor) Init() {
 	e.tileMap = tm
 
 	e.texture = e.TextureLoader.Load("base").Region(7*32, 1*32, 32, 32)
-	e.baseRenderer = maps.NewBaseRenderer(e.SpriteBatch, e.TextureLoader, e.tileMap)
+	e.baseRenderer = maps.NewBaseRenderer(e.SpriteBatch, e.TextureLoader, e.tileMap, true)
 	e.executor = NewMapCommandExecutor(e.tileMap)
 	e.selected = FLOOR_TOOL
 }

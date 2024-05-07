@@ -75,6 +75,7 @@ func NewGameplay(engineCtx *engine.Context) view.View {
 	renderSystemManager.Add(&roverRenderSystem{Context: engineCtx, roverCollection: roverCollection, physicsComponentManager: physicsComponentManager}, 2)
 	renderSystemManager.Add(&npcRenderSystem{Context: engineCtx, npcCollection: npcCollection, physicsComponentManager: physicsComponentManager}, 2)
 	renderSystemManager.Add(&physicsRenderSystem{Context: engineCtx, entityCollection: physicsCollection, physicsComponentManager: physicsComponentManager}, 3)
+	renderSystemManager.Add(&doorRenderSystem{Context: engineCtx, doorCollection: doorCollection, physicsComponentManager: physicsComponentManager}, 4)
 
 	createPlayer(entityManager, tagManager, groupManager, physicsComponentManager)
 	createRover(entityManager, tagManager, groupManager, physicsComponentManager)

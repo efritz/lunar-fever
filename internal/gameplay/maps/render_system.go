@@ -22,7 +22,7 @@ func NewBaseRenderSystem(engineCtx *engine.Context, tileMap *TileMap) *baseRende
 }
 
 func (s *baseRenderSystem) Init() {
-	s.baseRenderer = NewBaseRenderer(s.SpriteBatch, s.TextureLoader, s.tileMap)
+	s.baseRenderer = NewBaseRenderer(s.SpriteBatch, s.TextureLoader, s.tileMap, false)
 }
 
 func (s *baseRenderSystem) Exit() {}
@@ -40,11 +40,11 @@ type BaseRenderer struct {
 	textures    map[TileBitIndex]baseTexture
 }
 
-func NewBaseRenderer(spriteBatch *rendering.SpriteBatch, textureLoader *rendering.TextureLoader, tileMap *TileMap) *BaseRenderer {
+func NewBaseRenderer(spriteBatch *rendering.SpriteBatch, textureLoader *rendering.TextureLoader, tileMap *TileMap, renderDoors bool) *BaseRenderer {
 	return &BaseRenderer{
 		spriteBatch: spriteBatch,
 		tileMap:     tileMap,
-		textures:    newBaseTextureMap(textureLoader.Load("base")),
+		textures:    newBaseTextureMap(textureLoader.Load("base"), renderDoors),
 	}
 }
 
@@ -207,8 +207,8 @@ func newBaseTexture(texture rendering.Texture, x, y int, rotation float32) baseT
 	}
 }
 
-func newBaseTextureMap(texture rendering.Texture) map[TileBitIndex]baseTexture {
-	return map[TileBitIndex]baseTexture{
+func newBaseTextureMap(texture rendering.Texture, renderDoors bool) map[TileBitIndex]baseTexture {
+	m := map[TileBitIndex]baseTexture{
 		FLOOR_BIT:                      newBaseTexture(texture, 0, 1, 0),
 		INTERIOR_WALL_N_BIT:            newBaseTexture(texture, 2, 1, 0),
 		INTERIOR_WALL_S_BIT:            newBaseTexture(texture, 2, 1, 180),
@@ -226,13 +226,18 @@ func newBaseTextureMap(texture rendering.Texture) map[TileBitIndex]baseTexture {
 		EXTERIOR_CORNER_CONCAVE_NW_BIT: newBaseTexture(texture, 2, 0, 0),
 		EXTERIOR_CORNER_CONCAVE_SE_BIT: newBaseTexture(texture, 2, 0, 180),
 		EXTERIOR_CORNER_CONCAVE_SW_BIT: newBaseTexture(texture, 2, 0, 270),
-		DOOR_N_BIT:                     newBaseTexture(texture, 3, 1, 0),
-		DOOR_S_BIT:                     newBaseTexture(texture, 3, 1, 180),
-		DOOR_E_BIT:                     newBaseTexture(texture, 3, 1, 90),
-		DOOR_W_BIT:                     newBaseTexture(texture, 3, 1, 270),
 		TERMINUS_SW_BIT:                newBaseTexture(texture, 0, 0, 270),
 		TERMINUS_SE_BIT:                newBaseTexture(texture, 0, 0, 180),
 		TERMINUS_NW_BIT:                newBaseTexture(texture, 0, 0, 0),
 		TERMINUS_NE_BIT:                newBaseTexture(texture, 0, 0, 90),
 	}
+
+	if renderDoors {
+		m[DOOR_N_BIT] = newBaseTexture(texture, 3, 1, 0)
+		m[DOOR_S_BIT] = newBaseTexture(texture, 3, 1, 180)
+		m[DOOR_E_BIT] = newBaseTexture(texture, 3, 1, 90)
+		m[DOOR_W_BIT] = newBaseTexture(texture, 3, 1, 270)
+	}
+
+	return m
 }
