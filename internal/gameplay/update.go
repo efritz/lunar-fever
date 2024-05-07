@@ -19,6 +19,10 @@ const targetChecksumPath = "/Users/efritz/dev/efritz/lunar-fever/lunar-fever-mac
 func HasUpdate() (bool, error) {
 	contents, err := os.ReadFile(targetChecksumPath)
 	if err != nil {
+		if os.IsNotExist(err) {
+			return false, nil
+		}
+
 		return false, err
 	}
 	expectedSum := strings.TrimSpace(string(contents))
