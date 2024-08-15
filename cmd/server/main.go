@@ -6,6 +6,7 @@ import (
 	"net/http"
 	"os"
 	"path/filepath"
+	"strings"
 )
 
 const (
@@ -26,6 +27,7 @@ func main() {
 	})
 
 	http.HandleFunc("/upload", uploadHandler)
+	http.HandleFunc("/assets/", assetsHandler)
 
 	port := ":8080"
 	fmt.Printf("Server starting on %s\n", port)
@@ -91,4 +93,32 @@ func uploadHandler(w http.ResponseWriter, r *http.Request) {
 
 	fmt.Printf("Success: File '%s' uploaded successfully\n", header.Filename)
 	fmt.Fprintf(w, "File uploaded successfully")
+}
+
+func assetsHandler(w http.ResponseWriter, r *http.Request) {
+	filename := strings.TrimPrefix(r.URL.Path, "/assets/")
+	if filename == "" {
+		http.Error(w, "No file specified", http.StatusBadRequest)
+		return
+	}
+
+	filePath := filepath.Join(uploadDir, filename)
+
+	// Check if the file exists and is not a directory
+	fileInfo, err := os.Stat(filePath)
+	if os.IsNotExist(err) {
+		http.NotFound(w, r)
+		return
+	}
+	if err != nil {
+		http.Error(w, "Unable to access file", http.StatusInternalServerError)
+		return
+	}
+	if fileInfo.IsDir() {
+		http.Error(w, "Cannot serve directories", http.StatusForbidden)
+		return
+	}
+
+	// Serve the file
+	http.ServeFile(w, r, filePath)
 }
