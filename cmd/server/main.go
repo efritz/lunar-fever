@@ -43,8 +43,7 @@ func uploadHandler(w http.ResponseWriter, r *http.Request) {
 
 	// Check Basic Auth
 	_, password, ok := r.BasicAuth()
-	fmt.Printf("Trying to auth with password %q\n", password)
-	if !ok || !validateCredentials(password) {
+	if !ok || password != authPassword {
 		fmt.Printf("Error: Unauthorized access attempt\n")
 		w.Header().Set("WWW-Authenticate", `Basic realm="Restricted"`)
 		http.Error(w, "Unauthorized", http.StatusUnauthorized)
@@ -92,9 +91,4 @@ func uploadHandler(w http.ResponseWriter, r *http.Request) {
 
 	fmt.Printf("Success: File '%s' uploaded successfully\n", header.Filename)
 	fmt.Fprintf(w, "File uploaded successfully")
-}
-
-func validateCredentials(password string) bool {
-	fmt.Printf("> %q\n> %q\n", password, authPassword)
-	return password == authPassword
 }
