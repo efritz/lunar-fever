@@ -94,5 +94,6 @@ func uploadHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func validateCredentials(password string) bool {
+	fmt.Printf("> %q\n> %q\n", password, authPassword)
 	return password == authPassword
 }
