@@ -43,6 +43,7 @@ func uploadHandler(w http.ResponseWriter, r *http.Request) {
 
 	// Check Basic Auth
 	_, password, ok := r.BasicAuth()
+	fmt.Printf("Trying to auth with password %q\n", password)
 	if !ok || !validateCredentials(password) {
 		fmt.Printf("Error: Unauthorized access attempt\n")
 		w.Header().Set("WWW-Authenticate", `Basic realm="Restricted"`)
