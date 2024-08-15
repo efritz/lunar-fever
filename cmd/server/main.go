@@ -12,13 +12,13 @@ const (
 	uploadDir = "/var/data"
 )
 
-var authToken string
+var authPassword string
 
 func main() {
-	// Get the auth token from the environment
-	authToken = os.Getenv("AUTH_TOKEN")
-	if authToken == "" {
-		fmt.Println("Warning: AUTH_TOKEN not set in environment")
+	// Get the auth password from the environment
+	authPassword = os.Getenv("AUTH_PASSWORD")
+	if authPassword == "" {
+		fmt.Println("Warning: AUTH_PASSWORD not set in environment")
 	}
 
 	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
@@ -42,8 +42,8 @@ func uploadHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Check Basic Auth
-	username, password, ok := r.BasicAuth()
-	if !ok || !validateCredentials(username, password) {
+	_, password, ok := r.BasicAuth()
+	if !ok || !validateCredentials(password) {
 		fmt.Printf("Error: Unauthorized access attempt\n")
 		w.Header().Set("WWW-Authenticate", `Basic realm="Restricted"`)
 		http.Error(w, "Unauthorized", http.StatusUnauthorized)
@@ -93,8 +93,6 @@ func uploadHandler(w http.ResponseWriter, r *http.Request) {
 	fmt.Fprintf(w, "File uploaded successfully")
 }
 
-func validateCredentials(username, password string) bool {
-	// In this example, we're using the username as the token
-	// You might want to implement a more sophisticated authentication mechanism
-	return username == authToken && password == ""
+func validateCredentials(password string) bool {
+	return password == authPassword
 }
