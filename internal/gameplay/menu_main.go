@@ -10,13 +10,18 @@ import (
 )
 
 func NewMainMenu(engineCtx *engine.Context) view.View {
+	updater, err := NewUpdater()
+	if err != nil {
+		panic(err)
+	}
+
 	menu := NewMenu(engineCtx, nil)
-	hasUpdate, err := HasUpdate()
+	hasUpdate, err := updater.HasUpdate()
 	if err != nil {
 		panic(err)
 	}
 	if hasUpdate {
-		menu.AddEntry("Download update", &downloadUpdateMenuEntry{})
+		menu.AddEntry("Download update", &downloadUpdateMenuEntry{updater: updater})
 	}
 	menu.AddEntry("Play", &gameplayMenuEntry{Context: engineCtx})
 	menu.AddEntry("Tile editor", &tileEditorMenuEntry{Context: engineCtx})
@@ -26,10 +31,11 @@ func NewMainMenu(engineCtx *engine.Context) view.View {
 }
 
 type downloadUpdateMenuEntry struct {
+	updater *updater
 }
 
 func (e *downloadUpdateMenuEntry) OnSelect() {
-	if err := Update(); err != nil {
+	if err := e.updater.Update(); err != nil {
 		panic(err)
 	}
 }
