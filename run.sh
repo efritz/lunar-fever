@@ -1,3 +1,3 @@
 #!/bin/bash
 
-go run -ldflags -linkmode=external ./cmd/lunar-fever
+go run -ldflags -linkmode=external "${1:-./cmd/lunar-fever}"
