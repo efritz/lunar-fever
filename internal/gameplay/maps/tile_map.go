@@ -11,10 +11,6 @@ type TileBitIndex int64
 const (
 	// TODO - rename
 	FLOOR_BIT TileBitIndex = iota
-	HWALL_BIT
-	VWALL_BIT
-	HDOOR_BIT
-	VDOOR_BIT
 	INTERIOR_WALL_N_BIT
 	INTERIOR_WALL_S_BIT
 	INTERIOR_WALL_E_BIT
@@ -43,10 +39,6 @@ const (
 
 var TileBitIndexes = []TileBitIndex{
 	FLOOR_BIT,
-	HWALL_BIT,
-	VWALL_BIT,
-	HDOOR_BIT,
-	VDOOR_BIT,
 	INTERIOR_WALL_N_BIT,
 	INTERIOR_WALL_S_BIT,
 	INTERIOR_WALL_E_BIT,
