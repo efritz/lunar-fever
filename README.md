@@ -1,5 +1,5 @@
 # Lunar Fever
 
-Run via `go run ./cmd/lunar-fever`.
+Run via `./run.sh`.
 
 Enjoy :woozy-face:!
