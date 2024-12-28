@@ -48,6 +48,7 @@ func NewGameplay(engineCtx *engine.Context) view.View {
 	doorCollection := entity.NewCollection(group.NewEntityMatcher(groupManager, "door"), eventManager)
 	physicsCollection := entity.NewCollection(group.NewEntityMatcher(groupManager, "physics"), eventManager)
 	physicsComponentManager := component.NewTypedManager[*physics.PhysicsComponent, physics.PhysicsComponentType](componentManager, eventManager)
+	interactionComponentManager := component.NewTypedManager[*InteractionComponent, InteractionComponentType](componentManager, eventManager)
 	director := &CameraDirector{Context: engineCtx}
 
 	tileMap, err := loader.ReadTileMap()
@@ -66,18 +67,20 @@ func NewGameplay(engineCtx *engine.Context) view.View {
 	updateSystemManager.Add(&roverMovementSystem{Context: engineCtx, roverCollection: roverCollection, physicsComponentManager: physicsComponentManager}, 0)
 	updateSystemManager.Add(&cameraMovementSystem{Context: engineCtx}, 0)
 	updateSystemManager.Add(&doorOpenerSystem{Context: engineCtx, doorCollection: doorCollection, playerCollection: playerCollection, physicsComponentManager: physicsComponentManager}, 0)
+	updateSystemManager.Add(&interactionSystem{Context: engineCtx, playerCollection: playerCollection, physicsComponentManager: physicsComponentManager, interactionComponentManager: interactionComponentManager}, 0)
 	updateSystemManager.Add(director, 0)
 
 	renderSystemManager := system.NewManager()
 	renderSystemManager.Add(&regolithRenderSystem{Context: engineCtx}, 0)
 	renderSystemManager.Add(maps.NewBaseRenderSystem(engineCtx, tileMap), 1)
-	renderSystemManager.Add(&playerRenderSystem{Context: engineCtx, playerCollection: playerCollection, physicsComponentManager: physicsComponentManager}, 2)
+	renderSystemManager.Add(&playerRenderSystem{Context: engineCtx, playerCollection: playerCollection, physicsComponentManager: physicsComponentManager, interactionComponentManager: interactionComponentManager}, 2)
 	renderSystemManager.Add(&roverRenderSystem{Context: engineCtx, roverCollection: roverCollection, physicsComponentManager: physicsComponentManager}, 2)
 	renderSystemManager.Add(&npcRenderSystem{Context: engineCtx, npcCollection: npcCollection, physicsComponentManager: physicsComponentManager}, 2)
 	renderSystemManager.Add(&physicsRenderSystem{Context: engineCtx, entityCollection: physicsCollection, physicsComponentManager: physicsComponentManager}, 3)
 	renderSystemManager.Add(&doorRenderSystem{Context: engineCtx, doorCollection: doorCollection, physicsComponentManager: physicsComponentManager}, 4)
+	renderSystemManager.Add(&interactionRenderSystem{Context: engineCtx, playerCollection: playerCollection, physicsComponentManager: physicsComponentManager, interactionComponentManager: interactionComponentManager}, 5)
 
-	createPlayer(entityManager, tagManager, groupManager, physicsComponentManager)
+	createPlayer(entityManager, tagManager, groupManager, physicsComponentManager, interactionComponentManager)
 	createRover(entityManager, tagManager, groupManager, physicsComponentManager)
 	createNPC(entityManager, groupManager, physicsComponentManager)
 	createWalls(entityManager, groupManager, physicsComponentManager, tileMap)

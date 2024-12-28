@@ -30,3 +30,7 @@ func (t Texture) Region(x, y, width, height float32) Texture {
 		V2:     (y + height) / t.Height,
 	}
 }
+
+func (t Texture) Equals(other Texture) bool {
+	return t.ID == other.ID && t.Width == other.Width && t.Height == other.Height && t.U1 == other.U1 && t.V1 == other.V1 && t.U2 == other.U2 && t.V2 == other.V2
+}

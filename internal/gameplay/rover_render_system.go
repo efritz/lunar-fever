@@ -28,6 +28,12 @@ func (s *roverRenderSystem) Init() {
 
 func (s *roverRenderSystem) Exit() {}
 
+var (
+	// TODO - deglobalize
+	animationDelta int64
+	animationIndex int64
+)
+
 func (s *roverRenderSystem) Process(elapsedMs int64) {
 	animationDelta += elapsedMs
 	for animationDelta > 150 {

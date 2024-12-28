@@ -25,8 +25,8 @@ func (g *playerMovementSystem) Process(elapsedMs int64) {
 		return
 	}
 
-	playerXDir := int64(0)
-	playerYDir := int64(0)
+	playerXDir := float32(0)
+	playerYDir := float32(0)
 	if g.Keyboard.IsKeyDown(glfw.KeyS) {
 		playerYDir++
 	}
@@ -41,8 +41,8 @@ func (g *playerMovementSystem) Process(elapsedMs int64) {
 	}
 
 	if g.Keyboard.IsKeyDown(glfw.KeyLeftShift) {
-		playerXDir *= 3
-		playerYDir *= 3
+		playerXDir *= 1.5
+		playerYDir *= 1.5
 	}
 
 	mx := g.Camera.Unprojectx(float32(g.Mouse.X()))
@@ -70,7 +70,7 @@ func (g *playerMovementSystem) Process(elapsedMs int64) {
 
 			component.Body.LinearVelocity = component.Body.LinearVelocity.
 				Muls(1 - (float32(elapsedMs) / mod * transitionSpeed)).
-				Add(math.Vector{float32(playerXDir), float32(playerYDir)}.Muls(speed * float32(elapsedMs) / mod * transitionSpeed))
+				Add(math.Vector{playerXDir, playerYDir}.Muls(speed * float32(elapsedMs) / mod * transitionSpeed))
 		} else {
 			transitionSpeed := float32(8)
 
