@@ -26,10 +26,14 @@ type playerRenderSystem struct {
 	walkAtlases                 []rendering.Texture
 	runAtlases                  []rendering.Texture
 	interactAtlases             []rendering.Texture
+	idleAtlas                   []rendering.Texture
 	lastAnimationFrame          rendering.Texture
 	animationQueue              *animationQueue
 	distanceTraveled            float32
 	wasMoving                   bool
+
+	idleTimer   int64
+	idleRepeats int
 }
 
 func (s *playerRenderSystem) Init() {
@@ -62,6 +66,16 @@ func (s *playerRenderSystem) Init() {
 		s.TextureLoader.Load("character/scientist_1/interact_1/sci_interact_1_2").Region(0, 0, 64, 64),
 		s.TextureLoader.Load("character/scientist_1/interact_1/sci_interact_1_3").Region(0, 0, 64, 64),
 	}
+	s.idleAtlas = []rendering.Texture{
+		s.TextureLoader.Load("character/scientist_1/idle_2/sci_idle_2_1").Region(0, 0, 64, 64),
+		s.TextureLoader.Load("character/scientist_1/idle_2/sci_idle_2_2").Region(0, 0, 64, 64),
+		s.TextureLoader.Load("character/scientist_1/idle_2/sci_idle_2_3").Region(0, 0, 64, 64),
+		s.TextureLoader.Load("character/scientist_1/idle_2/sci_idle_2_4").Region(0, 0, 64, 64),
+		s.TextureLoader.Load("character/scientist_1/idle_2/sci_idle_2_5").Region(0, 0, 64, 64),
+		s.TextureLoader.Load("character/scientist_1/idle_2/sci_idle_2_6").Region(0, 0, 64, 64),
+		s.TextureLoader.Load("character/scientist_1/idle_2/sci_idle_2_7").Region(0, 0, 64, 64),
+		s.TextureLoader.Load("character/scientist_1/idle_2/sci_idle_2_8").Region(0, 0, 64, 64),
+	}
 
 	s.lastAnimationFrame = s.walkAtlases[2]
 	s.animationQueue = &animationQueue{}
@@ -75,6 +89,8 @@ const (
 	runThreshold              = 0.35 // Speed threshold to switch to run animation
 	frameInterval             = 0.02 // How much distance to travel before next frame
 	transitionSpeed           = 0.1  // How fast to transition between frames when stopping
+	timeUntilIdleAnimation    = 3
+	idleAnimationRepeats      = 3
 )
 
 func (s *playerRenderSystem) Process(elapsedMs int64) {
@@ -111,21 +127,40 @@ func (s *playerRenderSystem) Process(elapsedMs int64) {
 func (s *playerRenderSystem) selectBodyTexture(component *physics.PhysicsComponent, interacting bool, elapsedMs int64) rendering.Texture {
 	// Animate movement
 	if speed := component.Body.LinearVelocity.Len(); s.canWalk(speed) {
+		s.idleTimer = 0
+		s.idleRepeats = 0
 		s.wasMoving = true
 		s.animationQueue.Reset()
+
 		s.lastAnimationFrame = s.selectMovingTexture(speed, elapsedMs)
 
 		return s.lastAnimationFrame
 	}
 
 	if s.wasMoving {
+		s.idleTimer = 0
+		s.idleRepeats = 0
 		s.wasMoving = false
 		s.animationQueue.Load(s.selectPathToIdleFrame())
 	}
 
 	if interacting {
 		// Poke animation
+		s.idleTimer = 0
+		s.idleRepeats = 0
 		s.animationQueue.Load(s.interactAtlases)
+	}
+
+	s.idleTimer += elapsedMs
+	if s.animationQueue.Empty() && s.idleTimer > timeUntilIdleAnimation*1000 {
+		if s.idleRepeats < idleAnimationRepeats {
+			s.idleRepeats++
+			s.animationQueue.Load(s.idleAtlas)
+		} else {
+			s.idleTimer = 0
+			s.idleRepeats = 0
+			s.lastAnimationFrame = s.walkAtlases[2]
+		}
 	}
 
 	// Attempt to pop the next frame from the animation queue
