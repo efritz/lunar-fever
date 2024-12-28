@@ -10,12 +10,6 @@ import (
 	"github.com/efritz/lunar-fever/internal/engine/rendering"
 )
 
-// TODO: need to set some sort of way to "push" animation queues into the player
-// so that things like interaction can happen from outside of this component.
-//
-// Look at the camera director and/or think of a component that can be added with
-// some sort of current status that can be updated.
-
 type playerRenderSystem struct {
 	*engine.Context
 	playerCollection            *entity.Collection
