@@ -29,6 +29,7 @@ type interactionSystem struct {
 	playerCollection            *entity.Collection
 	physicsComponentManager     *component.TypedManager[*physics.PhysicsComponent, physics.PhysicsComponentType]
 	interactionComponentManager *component.TypedManager[*InteractionComponent, InteractionComponentType]
+	healthComponentManager      *component.TypedManager[*HealthComponent, HealthComponentType]
 }
 
 func (s *interactionSystem) Init() {}
@@ -48,9 +49,14 @@ func (s *interactionSystem) Process(elapsedMs int64) {
 			return
 		}
 
+		healthComponent, ok := s.healthComponentManager.GetComponent(entity)
+		if !ok {
+			return
+		}
+
 		interactionComponent.CooldownTimer -= elapsedMs
 
-		if s.Keyboard.IsKeyNewlyDown(glfw.KeyE) && canInteract(physicsComponent, interactionComponent) {
+		if s.Keyboard.IsKeyNewlyDown(glfw.KeyE) && canInteract(physicsComponent, interactionComponent, healthComponent) {
 			// TODO - should interact _against_ another object
 			interactionComponent.Interacting = true
 			interactionComponent.CooldownTimer = int64(interactionCooldown * 1000)
@@ -60,7 +66,11 @@ func (s *interactionSystem) Process(elapsedMs int64) {
 	}
 }
 
-func canInteract(physicsComponent *physics.PhysicsComponent, interactionComponent *InteractionComponent) bool {
+func canInteract(physicsComponent *physics.PhysicsComponent, interactionComponent *InteractionComponent, healthComponent *HealthComponent) bool {
+	if healthComponent.Health <= 0 {
+		return false
+	}
+
 	if physicsComponent.Body.LinearVelocity.Len() >= minStartAnimationSpeed {
 		return false
 	}

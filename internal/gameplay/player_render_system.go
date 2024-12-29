@@ -1,8 +1,7 @@
 package gameplay
 
 import (
-	stdmath "math"
-
+	"github.com/efritz/lunar-fever/internal/common/math"
 	"github.com/efritz/lunar-fever/internal/engine"
 	"github.com/efritz/lunar-fever/internal/engine/ecs/component"
 	"github.com/efritz/lunar-fever/internal/engine/ecs/entity"
@@ -15,16 +14,19 @@ type playerRenderSystem struct {
 	playerCollection            *entity.Collection
 	physicsComponentManager     *component.TypedManager[*physics.PhysicsComponent, physics.PhysicsComponentType]
 	interactionComponentManager *component.TypedManager[*InteractionComponent, InteractionComponentType]
+	healthComponentManager      *component.TypedManager[*HealthComponent, HealthComponentType]
 	emptyTexture                rendering.Texture
 	headAtlas                   rendering.Texture
 	walkAtlases                 []rendering.Texture
 	runAtlases                  []rendering.Texture
 	interactAtlases             []rendering.Texture
 	idleAtlas                   []rendering.Texture
+	deathAtlas                  []rendering.Texture
 	lastAnimationFrame          rendering.Texture
 	animationQueue              *animationQueue
 	distanceTraveled            float32
 	wasMoving                   bool
+	died                        bool
 
 	idleTimer   int64
 	idleRepeats int
@@ -70,6 +72,14 @@ func (s *playerRenderSystem) Init() {
 		s.TextureLoader.Load("character/scientist_1/idle_2/sci_idle_2_7").Region(0, 0, 64, 64),
 		s.TextureLoader.Load("character/scientist_1/idle_2/sci_idle_2_8").Region(0, 0, 64, 64),
 	}
+	s.deathAtlas = []rendering.Texture{
+		s.TextureLoader.Load("character/scientist_1/die_1/sci_fall_1_1").Region(0, 0, 64, 128),
+		s.TextureLoader.Load("character/scientist_1/die_1/sci_fall_1_2").Region(0, 0, 64, 128),
+		s.TextureLoader.Load("character/scientist_1/die_1/sci_fall_1_3").Region(0, 0, 64, 128),
+		s.TextureLoader.Load("character/scientist_1/die_1/sci_fall_1_4").Region(0, 0, 64, 128),
+		s.TextureLoader.Load("character/scientist_1/die_1/sci_fall_1_5").Region(0, 0, 64, 128),
+		s.TextureLoader.Load("character/scientist_1/die_1/sci_fall_1_6").Region(0, 0, 64, 128),
+	}
 
 	s.lastAnimationFrame = s.walkAtlases[2]
 	s.animationQueue = &animationQueue{}
@@ -102,17 +112,60 @@ func (s *playerRenderSystem) Process(elapsedMs int64) {
 			interacting = interactionComponent.Interacting
 		}
 
+		dead := false
+		healthComponent, ok := s.healthComponentManager.GetComponent(entity)
+		if ok {
+			dead = healthComponent.Health <= 0
+		}
+
+		if dead {
+			rotate := func(v math.Vector, angle float32) math.Vector {
+				sinA := math.Sin32(angle)
+				cosA := math.Cos32(angle)
+				return math.Vector{
+					X: v.X*cosA - v.Y*sinA,
+					Y: v.X*sinA + v.Y*cosA,
+				}
+			}
+
+			if physicsComponent.Body.Name == "player" {
+				old := physicsComponent.Body
+				physicsComponent.Body = physics.NewBody("player-dead", []physics.Fixture{
+					physics.NewBasicFixture(
+						0, 0, 48/2, 48, // bounds
+						0.3, 0.2, // material
+						0, 0, // friction
+					),
+				})
+				physicsComponent.Body.Position = old.Position.Add(rotate(math.Vector{0, -(48 / 2)}, old.Orient))
+				physicsComponent.Body.Orient = old.Orient
+				physicsComponent.Body.Rotation = old.Rotation
+			}
+		}
+
 		x1, y1, x2, y2 := physicsComponent.Body.NonorientedBound()
 		w := x2 - x1
 		h := y2 - y1
 
-		d := -float32(stdmath.Pi / 2)
+		if dead {
+			if !s.died && s.animationQueue.Empty() {
+				s.died = true
+				s.animationQueue.Load(s.deathAtlas)
+			}
 
-		// Draw body
-		s.SpriteBatch.Draw(s.selectBodyTexture(physicsComponent, interacting, elapsedMs), x1, y1, w, h, rendering.WithRotation(physicsComponent.Body.Orient+d), rendering.WithOrigin(w/2, h/2))
+			// Attempt to pop the next frame from the animation queue
+			if frame, ok := s.animationQueue.Texture(elapsedMs); ok {
+				s.lastAnimationFrame = frame
+			}
 
-		// Always draw head
-		s.SpriteBatch.Draw(s.headAtlas, x1, y1, w, h, rendering.WithRotation(physicsComponent.Body.Orient-d), rendering.WithOrigin(w/2, h/2))
+			s.SpriteBatch.Draw(s.lastAnimationFrame, x1, y1, w, h, rendering.WithRotation(physicsComponent.Body.Orient), rendering.WithOrigin(w/2, h/2))
+		} else {
+			// Draw body
+			s.SpriteBatch.Draw(s.selectBodyTexture(physicsComponent, interacting, elapsedMs), x1, y1, w, h, rendering.WithRotation(physicsComponent.Body.Orient), rendering.WithOrigin(w/2, h/2))
+
+			// Always draw head
+			s.SpriteBatch.Draw(s.headAtlas, x1, y1, w, h, rendering.WithRotation(physicsComponent.Body.Orient), rendering.WithOrigin(w/2, h/2))
+		}
 	}
 
 	s.SpriteBatch.End()
@@ -228,7 +281,7 @@ func (q *animationQueue) Reset() {
 }
 
 func (q *animationQueue) Load(animations []rendering.Texture) {
-	q.timer = 0
+	q.timer = transitionSpeed
 	q.frames = animations
 }
 

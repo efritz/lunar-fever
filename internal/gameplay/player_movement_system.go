@@ -7,17 +7,23 @@ import (
 	"github.com/efritz/lunar-fever/internal/engine"
 	"github.com/efritz/lunar-fever/internal/engine/ecs/component"
 	"github.com/efritz/lunar-fever/internal/engine/ecs/entity"
+	"github.com/efritz/lunar-fever/internal/engine/event"
 	"github.com/efritz/lunar-fever/internal/engine/physics"
 	"github.com/go-gl/glfw/v3.2/glfw"
 )
 
 type playerMovementSystem struct {
 	*engine.Context
+	eventManager            *event.Manager
 	playerCollection        *entity.Collection
 	physicsComponentManager *component.TypedManager[*physics.PhysicsComponent, physics.PhysicsComponentType]
+	healthComponentManager  *component.TypedManager[*HealthComponent, HealthComponentType]
 }
 
-func (s *playerMovementSystem) Init() {}
+func (s *playerMovementSystem) Init() {
+	NewEntityDeathEventManager(s.eventManager).AddListener(s)
+}
+
 func (s *playerMovementSystem) Exit() {}
 
 func (g *playerMovementSystem) Process(elapsedMs int64) {
@@ -49,18 +55,25 @@ func (g *playerMovementSystem) Process(elapsedMs int64) {
 	my := g.Camera.UnprojectY(float32(g.Mouse.Y()))
 
 	for _, entity := range g.playerCollection.Entities() {
-		component, ok := g.physicsComponentManager.GetComponent(entity)
+		physicsComponent, ok := g.physicsComponentManager.GetComponent(entity)
 		if !ok {
 			continue
 		}
 
-		angle := math.Atan232(my-component.Body.Position.Y, mx-component.Body.Position.X)
+		if healthComponent, ok := g.healthComponentManager.GetComponent(entity); !ok || healthComponent.Health <= 0 {
+			physicsComponent.Body.LinearVelocity = math.Vector{0, 0}
+			physicsComponent.Body.AngularVelocity = 0
+			continue
+		}
+
+		angle := math.Atan232(my-physicsComponent.Body.Position.Y, mx-physicsComponent.Body.Position.X)
 		if angle < 0 {
 			angle = (2 * stdmath.Pi) - (-angle)
 		}
+		angle -= float32(stdmath.Pi / 2)
 
-		if component.Body.Orient != angle {
-			component.Body.SetOrient(angle)
+		if physicsComponent.Body.Orient != angle {
+			physicsComponent.Body.SetOrient(angle)
 		}
 
 		mod := float32(1000)
@@ -68,14 +81,18 @@ func (g *playerMovementSystem) Process(elapsedMs int64) {
 			speed := float32(.35)
 			transitionSpeed := float32(4)
 
-			component.Body.LinearVelocity = component.Body.LinearVelocity.
+			physicsComponent.Body.LinearVelocity = physicsComponent.Body.LinearVelocity.
 				Muls(1 - (float32(elapsedMs) / mod * transitionSpeed)).
 				Add(math.Vector{playerXDir, playerYDir}.Muls(speed * float32(elapsedMs) / mod * transitionSpeed))
 		} else {
 			transitionSpeed := float32(8)
 
-			component.Body.LinearVelocity = component.Body.LinearVelocity.Muls(1 - (float32(elapsedMs) / mod * transitionSpeed))
-			component.Body.AngularVelocity = component.Body.AngularVelocity * (1 - (float32(elapsedMs) / mod * transitionSpeed))
+			physicsComponent.Body.LinearVelocity = physicsComponent.Body.LinearVelocity.Muls(1 - (float32(elapsedMs) / mod * transitionSpeed))
+			physicsComponent.Body.AngularVelocity = physicsComponent.Body.AngularVelocity * (1 - (float32(elapsedMs) / mod * transitionSpeed))
 		}
 	}
+}
+
+func (s *playerMovementSystem) OnEntityDeath(e EntityDeathEvent) {
+	// s.physicsComponentManager.RemoveComponent(e.entity)
 }

@@ -13,6 +13,7 @@ type interactionRenderSystem struct {
 	playerCollection            *entity.Collection
 	physicsComponentManager     *component.TypedManager[*physics.PhysicsComponent, physics.PhysicsComponentType]
 	interactionComponentManager *component.TypedManager[*InteractionComponent, InteractionComponentType]
+	healthComponentManager      *component.TypedManager[*HealthComponent, HealthComponentType]
 	emptyTexture                rendering.Texture
 }
 
@@ -34,7 +35,12 @@ func (s *interactionRenderSystem) Process(elapsedMs int64) {
 			return
 		}
 
-		if !interactionComponent.Interacting && canInteract(physicsComponent, interactionComponent) {
+		healthComponent, ok := s.healthComponentManager.GetComponent(entity)
+		if !ok {
+			return
+		}
+
+		if !interactionComponent.Interacting && canInteract(physicsComponent, interactionComponent, healthComponent) {
 			s.SpriteBatch.Begin()
 
 			x1, y1, _, _ := physicsComponent.Body.NonorientedBound()

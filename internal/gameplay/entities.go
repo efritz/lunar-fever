@@ -17,6 +17,7 @@ func createPlayer(
 	groupManager *group.Manager,
 	physicsComponentManager *component.TypedManager[*physics.PhysicsComponent, physics.PhysicsComponentType],
 	interactionComponentManager *component.TypedManager[*InteractionComponent, InteractionComponentType],
+	healthComponentManager *component.TypedManager[*HealthComponent, HealthComponentType],
 ) {
 	player := entityManager.Create()
 	tagManager.SetTag(player, "player")
@@ -32,6 +33,7 @@ func createPlayer(
 	body.Position = math.Vector{rendering.DisplayWidth - 200, 400}
 	physicsComponentManager.AddComponent(player, &physics.PhysicsComponent{Body: body})
 	interactionComponentManager.AddComponent(player, &InteractionComponent{})
+	healthComponentManager.AddComponent(player, &HealthComponent{Health: 100, MaxHealth: 100})
 }
 
 func createRover(
