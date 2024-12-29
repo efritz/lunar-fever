@@ -119,47 +119,48 @@ func (s *playerRenderSystem) Process(elapsedMs int64) {
 }
 
 func (s *playerRenderSystem) selectBodyTexture(component *physics.PhysicsComponent, interacting bool, elapsedMs int64) rendering.Texture {
-	// Animate movement
 	if speed := component.Body.LinearVelocity.Len(); s.canWalk(speed) {
+		// Animate movement
 		s.idleTimer = 0
 		s.idleRepeats = 0
 		s.wasMoving = true
 		s.animationQueue.Reset()
-
 		s.lastAnimationFrame = s.selectMovingTexture(speed, elapsedMs)
-
-		return s.lastAnimationFrame
-	}
-
-	if s.wasMoving {
-		s.idleTimer = 0
-		s.idleRepeats = 0
-		s.wasMoving = false
-		s.animationQueue.Load(s.selectPathToIdleFrame())
-	}
-
-	if interacting {
-		// Poke animation
-		s.idleTimer = 0
-		s.idleRepeats = 0
-		s.animationQueue.Load(s.interactAtlases)
-	}
-
-	s.idleTimer += elapsedMs
-	if s.animationQueue.Empty() && s.idleTimer > timeUntilIdleAnimation*1000 {
-		if s.idleRepeats < idleAnimationRepeats {
-			s.idleRepeats++
-			s.animationQueue.Load(s.idleAtlas)
-		} else {
+	} else {
+		if s.wasMoving {
+			// Transition to idle animation
 			s.idleTimer = 0
 			s.idleRepeats = 0
+			s.wasMoving = false
+			s.animationQueue.Load(s.selectPathToIdleFrame())
+		}
+
+		if interacting {
+			// Poke animation
+			s.idleTimer = 0
+			s.idleRepeats = 0
+			s.animationQueue.Load(s.interactAtlases)
+		}
+
+		s.idleTimer += elapsedMs
+		if s.animationQueue.Empty() && s.idleTimer > timeUntilIdleAnimation*1000 {
+			if s.idleRepeats < idleAnimationRepeats {
+				s.idleRepeats++
+				s.animationQueue.Load(s.idleAtlas)
+			} else {
+				s.idleTimer = 0
+				s.idleRepeats = 0
+			}
+		}
+
+		if s.animationQueue.Empty() {
 			s.lastAnimationFrame = s.walkAtlases[2]
 		}
-	}
 
-	// Attempt to pop the next frame from the animation queue
-	if frame, ok := s.animationQueue.Texture(elapsedMs); ok {
-		s.lastAnimationFrame = frame
+		// Attempt to pop the next frame from the animation queue
+		if frame, ok := s.animationQueue.Texture(elapsedMs); ok {
+			s.lastAnimationFrame = frame
+		}
 	}
 
 	return s.lastAnimationFrame
