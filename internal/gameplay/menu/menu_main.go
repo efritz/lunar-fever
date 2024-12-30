@@ -1,4 +1,4 @@
-package gameplay
+package menu
 
 import (
 	"fmt"
@@ -9,7 +9,7 @@ import (
 	"github.com/efritz/lunar-fever/internal/gameplay/maps/editor"
 )
 
-func NewMainMenu(engineCtx *engine.Context) view.View {
+func NewMainMenu(engineCtx *engine.Context, gameplayFactory func(*engine.Context) view.View) view.View {
 	updater, err := NewUpdater()
 	if err != nil {
 		panic(err)
@@ -23,7 +23,7 @@ func NewMainMenu(engineCtx *engine.Context) view.View {
 	if hasUpdate {
 		menu.AddEntry("Download update", &downloadUpdateMenuEntry{updater: updater})
 	}
-	menu.AddEntry("Play", &gameplayMenuEntry{Context: engineCtx})
+	menu.AddEntry("Play", &gameplayMenuEntry{Context: engineCtx, gameplayFactory: gameplayFactory})
 	menu.AddEntry("Tile editor", &tileEditorMenuEntry{Context: engineCtx})
 	menu.AddEntry("Exit", &exitMenuEntry{exit: engineCtx.Game.Stop})
 
@@ -42,10 +42,11 @@ func (e *downloadUpdateMenuEntry) OnSelect() {
 
 type gameplayMenuEntry struct {
 	*engine.Context
+	gameplayFactory func(*engine.Context) view.View
 }
 
 func (e *gameplayMenuEntry) OnSelect() {
-	Load(e.Context, NewGameplay(e.Context), fakeLoader)
+	Load(e.Context, e.gameplayFactory(e.Context), fakeLoader)
 }
 
 type tileEditorMenuEntry struct {

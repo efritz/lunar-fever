@@ -1,4 +1,4 @@
-package gameplay
+package menu
 
 import (
 	"github.com/efritz/lunar-fever/internal/engine"

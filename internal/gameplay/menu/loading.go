@@ -1,4 +1,4 @@
-package gameplay
+package menu
 
 import (
 	"math"

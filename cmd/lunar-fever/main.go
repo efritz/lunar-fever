@@ -4,12 +4,13 @@ import (
 	"github.com/efritz/lunar-fever/internal/engine"
 	"github.com/efritz/lunar-fever/internal/engine/view"
 	"github.com/efritz/lunar-fever/internal/gameplay"
+	"github.com/efritz/lunar-fever/internal/gameplay/menu"
 )
 
 func main() {
 	opts := []engine.DelegateOption{
 		engine.WithInitialView(func(engineCtx *engine.Context) view.View {
-			return view.NewTransitionView(gameplay.NewMainMenu(engineCtx), engineCtx.ViewManager)
+			return view.NewTransitionView(menu.NewMainMenu(engineCtx, gameplay.NewGameplay), engineCtx.ViewManager)
 		}),
 	}
 

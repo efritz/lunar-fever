@@ -1,8 +1,7 @@
-package gameplay
+package menu
 
 import (
 	"github.com/efritz/lunar-fever/internal/engine"
-	"github.com/efritz/lunar-fever/internal/engine/rendering"
 
 	"github.com/go-gl/glfw/v3.2/glfw"
 )
@@ -101,13 +100,4 @@ func (m *Menu) Render(elapsedMs int64) {
 
 func (m *Menu) IsOverlay() bool {
 	return false
-}
-
-var font *rendering.Font
-
-func initFonts() {
-	var err error
-	if font, err = rendering.LoadFont("Roboto-Light"); err != nil {
-		panic(err)
-	}
 }

@@ -12,6 +12,7 @@ import (
 	"github.com/efritz/lunar-fever/internal/engine/view"
 	"github.com/efritz/lunar-fever/internal/gameplay/maps"
 	"github.com/efritz/lunar-fever/internal/gameplay/maps/loader"
+	"github.com/efritz/lunar-fever/internal/gameplay/menu"
 	"github.com/go-gl/glfw/v3.2/glfw"
 )
 
@@ -76,6 +77,7 @@ func NewGameplay(engineCtx *engine.Context) view.View {
 }
 
 func (g *Gameplay) Init() {
+	initFonts()
 	g.updateSystemManager.Init()
 	g.renderSystemManager.Init()
 }
@@ -95,10 +97,10 @@ func (g *Gameplay) Update(elapsedMs int64, hasFocus bool) {
 
 	// Menu management
 	if g.Keyboard.IsKeyNewlyDown(glfw.KeyEscape) {
-		g.ViewManager.Add(NewPauseMenu(g.Context))
+		g.ViewManager.Add(menu.NewPauseMenu(g.Context))
 	}
 	if g.Keyboard.IsKeyNewlyDown(glfw.KeyTab) {
-		g.ViewManager.Add(NewObjectiveMenu(g.Context))
+		g.ViewManager.Add(menu.NewObjectiveMenu(g.Context))
 	}
 
 	// Center on player
