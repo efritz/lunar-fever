@@ -4,17 +4,15 @@ import (
 	stdmath "math"
 
 	"github.com/efritz/lunar-fever/internal/common/math"
-	"github.com/efritz/lunar-fever/internal/engine"
-	"github.com/efritz/lunar-fever/internal/engine/ecs/component"
-	"github.com/efritz/lunar-fever/internal/engine/ecs/entity"
-	"github.com/efritz/lunar-fever/internal/engine/physics"
 	"github.com/go-gl/glfw/v3.2/glfw"
 )
 
 type roverMovementSystem struct {
-	*engine.Context
-	roverCollection         *entity.Collection
-	physicsComponentManager *component.TypedManager[*physics.PhysicsComponent, physics.PhysicsComponentType]
+	*GameContext
+}
+
+func NewRoverMovementSystem(ctx *GameContext) *roverMovementSystem {
+	return &roverMovementSystem{GameContext: ctx}
 }
 
 func (s *roverMovementSystem) Init() {}
@@ -46,8 +44,8 @@ func (g *roverMovementSystem) Process(elapsedMs int64) {
 		roverXDir--
 	}
 
-	for _, entity := range g.roverCollection.Entities() {
-		component, ok := g.physicsComponentManager.GetComponent(entity)
+	for _, entity := range g.RoverCollection.Entities() {
+		component, ok := g.PhysicsComponentManager.GetComponent(entity)
 		if !ok {
 			continue
 		}

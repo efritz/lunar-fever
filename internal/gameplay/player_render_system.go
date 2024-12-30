@@ -2,34 +2,33 @@ package gameplay
 
 import (
 	"github.com/efritz/lunar-fever/internal/common/math"
-	"github.com/efritz/lunar-fever/internal/engine"
-	"github.com/efritz/lunar-fever/internal/engine/ecs/component"
-	"github.com/efritz/lunar-fever/internal/engine/ecs/entity"
 	"github.com/efritz/lunar-fever/internal/engine/physics"
 	"github.com/efritz/lunar-fever/internal/engine/rendering"
 )
 
 type playerRenderSystem struct {
-	*engine.Context
-	playerCollection            *entity.Collection
-	physicsComponentManager     *component.TypedManager[*physics.PhysicsComponent, physics.PhysicsComponentType]
-	interactionComponentManager *component.TypedManager[*InteractionComponent, InteractionComponentType]
-	healthComponentManager      *component.TypedManager[*HealthComponent, HealthComponentType]
-	emptyTexture                rendering.Texture
-	headAtlas                   rendering.Texture
-	walkAtlases                 []rendering.Texture
-	runAtlases                  []rendering.Texture
-	interactAtlases             []rendering.Texture
-	idleAtlas                   []rendering.Texture
-	deathAtlas                  []rendering.Texture
-	lastAnimationFrame          rendering.Texture
-	animationQueue              *animationQueue
-	distanceTraveled            float32
-	wasMoving                   bool
-	died                        bool
+	*GameContext
+	emptyTexture       rendering.Texture
+	headAtlas          rendering.Texture
+	walkAtlases        []rendering.Texture
+	runAtlases         []rendering.Texture
+	interactAtlases    []rendering.Texture
+	idleAtlas          []rendering.Texture
+	deathAtlas         []rendering.Texture
+	lastAnimationFrame rendering.Texture
+	animationQueue     *animationQueue
+	distanceTraveled   float32
+	wasMoving          bool
+	died               bool
 
 	idleTimer   int64
 	idleRepeats int
+}
+
+func NewPlayerRenderSystem(ctx *GameContext) *playerRenderSystem {
+	return &playerRenderSystem{
+		GameContext: ctx,
+	}
 }
 
 func (s *playerRenderSystem) Init() {
@@ -100,20 +99,20 @@ const (
 func (s *playerRenderSystem) Process(elapsedMs int64) {
 	s.SpriteBatch.Begin()
 
-	for _, entity := range s.playerCollection.Entities() {
-		physicsComponent, ok := s.physicsComponentManager.GetComponent(entity)
+	for _, entity := range s.PlayerCollection.Entities() {
+		physicsComponent, ok := s.PhysicsComponentManager.GetComponent(entity)
 		if !ok {
 			continue
 		}
 
 		interacting := false
-		interactionComponent, ok := s.interactionComponentManager.GetComponent(entity)
+		interactionComponent, ok := s.InteractionComponentManager.GetComponent(entity)
 		if ok {
 			interacting = interactionComponent.Interacting
 		}
 
 		dead := false
-		healthComponent, ok := s.healthComponentManager.GetComponent(entity)
+		healthComponent, ok := s.HealthComponentManager.GetComponent(entity)
 		if ok {
 			dead = healthComponent.Health <= 0
 		}

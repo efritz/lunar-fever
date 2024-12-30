@@ -1,12 +1,15 @@
 package gameplay
 
 import (
-	"github.com/efritz/lunar-fever/internal/engine"
 	"github.com/go-gl/glfw/v3.2/glfw"
 )
 
 type cameraMovementSystem struct {
-	*engine.Context
+	*GameContext
+}
+
+func NewCameraMovementSystem(ctx *GameContext) *cameraMovementSystem {
+	return &cameraMovementSystem{GameContext: ctx}
 }
 
 func (s *cameraMovementSystem) Init() {}

@@ -3,18 +3,16 @@ package gameplay
 import (
 	stdmath "math"
 
-	"github.com/efritz/lunar-fever/internal/engine"
-	"github.com/efritz/lunar-fever/internal/engine/ecs/component"
-	"github.com/efritz/lunar-fever/internal/engine/ecs/entity"
-	"github.com/efritz/lunar-fever/internal/engine/physics"
 	"github.com/efritz/lunar-fever/internal/engine/rendering"
 )
 
 type doorRenderSystem struct {
-	*engine.Context
-	doorCollection          *entity.Collection
-	physicsComponentManager *component.TypedManager[*physics.PhysicsComponent, physics.PhysicsComponentType]
-	texture                 rendering.Texture
+	*GameContext
+	texture rendering.Texture
+}
+
+func NewDoorRenderSystem(ctx *GameContext) *doorRenderSystem {
+	return &doorRenderSystem{GameContext: ctx}
 }
 
 func (s *doorRenderSystem) Init() {
@@ -26,8 +24,8 @@ func (s *doorRenderSystem) Exit() {}
 func (s *doorRenderSystem) Process(elapsedMs int64) {
 	s.SpriteBatch.Begin()
 
-	for _, entity := range s.doorCollection.Entities() {
-		component, ok := s.physicsComponentManager.GetComponent(entity)
+	for _, entity := range s.DoorCollection.Entities() {
+		component, ok := s.PhysicsComponentManager.GetComponent(entity)
 		if !ok || component.CollisionsDisabled {
 			continue
 		}

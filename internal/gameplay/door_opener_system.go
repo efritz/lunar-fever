@@ -1,17 +1,15 @@
 package gameplay
 
 import (
-	"github.com/efritz/lunar-fever/internal/engine"
-	"github.com/efritz/lunar-fever/internal/engine/ecs/component"
-	"github.com/efritz/lunar-fever/internal/engine/ecs/entity"
 	"github.com/efritz/lunar-fever/internal/engine/physics"
 )
 
 type doorOpenerSystem struct {
-	*engine.Context
-	doorCollection          *entity.Collection
-	playerCollection        *entity.Collection
-	physicsComponentManager *component.TypedManager[*physics.PhysicsComponent, physics.PhysicsComponentType]
+	*GameContext
+}
+
+func NewDoorOpenerSystem(ctx *GameContext) *doorOpenerSystem {
+	return &doorOpenerSystem{GameContext: ctx}
 }
 
 func (s *doorOpenerSystem) Init() {}
@@ -19,8 +17,8 @@ func (s *doorOpenerSystem) Exit() {}
 
 func (s *doorOpenerSystem) Process(elapsedMs int64) {
 	var playerPhysicsComponent *physics.PhysicsComponent
-	for _, entity := range s.playerCollection.Entities() {
-		component, ok := s.physicsComponentManager.GetComponent(entity)
+	for _, entity := range s.PlayerCollection.Entities() {
+		component, ok := s.PhysicsComponentManager.GetComponent(entity)
 		if !ok {
 			return
 		}
@@ -28,8 +26,8 @@ func (s *doorOpenerSystem) Process(elapsedMs int64) {
 		playerPhysicsComponent = component
 	}
 
-	for _, entity := range s.doorCollection.Entities() {
-		component, ok := s.physicsComponentManager.GetComponent(entity)
+	for _, entity := range s.DoorCollection.Entities() {
+		component, ok := s.PhysicsComponentManager.GetComponent(entity)
 		if !ok {
 			return
 		}

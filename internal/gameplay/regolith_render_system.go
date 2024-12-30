@@ -2,13 +2,16 @@ package gameplay
 
 import (
 	"github.com/efritz/lunar-fever/internal/common/math"
-	"github.com/efritz/lunar-fever/internal/engine"
 	"github.com/efritz/lunar-fever/internal/engine/rendering"
 )
 
 type regolithRenderSystem struct {
-	*engine.Context
+	*GameContext
 	textures []rendering.Texture
+}
+
+func NewRegolithRenderSystem(ctx *GameContext) *regolithRenderSystem {
+	return &regolithRenderSystem{GameContext: ctx}
 }
 
 func (s *regolithRenderSystem) Init() {

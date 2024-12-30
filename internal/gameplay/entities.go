@@ -2,26 +2,15 @@ package gameplay
 
 import (
 	"github.com/efritz/lunar-fever/internal/common/math"
-	"github.com/efritz/lunar-fever/internal/engine/ecs/component"
-	"github.com/efritz/lunar-fever/internal/engine/ecs/entity"
-	"github.com/efritz/lunar-fever/internal/engine/ecs/entity/group"
-	"github.com/efritz/lunar-fever/internal/engine/ecs/entity/tag"
 	"github.com/efritz/lunar-fever/internal/engine/physics"
 	"github.com/efritz/lunar-fever/internal/engine/rendering"
 	"github.com/efritz/lunar-fever/internal/gameplay/maps"
 )
 
-func createPlayer(
-	entityManager *entity.Manager,
-	tagManager *tag.Manager,
-	groupManager *group.Manager,
-	physicsComponentManager *component.TypedManager[*physics.PhysicsComponent, physics.PhysicsComponentType],
-	interactionComponentManager *component.TypedManager[*InteractionComponent, InteractionComponentType],
-	healthComponentManager *component.TypedManager[*HealthComponent, HealthComponentType],
-) {
-	player := entityManager.Create()
-	tagManager.SetTag(player, "player")
-	groupManager.AddGroup(player, "physics")
+func createPlayer(ctx *GameContext) {
+	player := ctx.EntityManager.Create()
+	ctx.TagManager.SetTag(player, "player")
+	ctx.GroupManager.AddGroup(player, "physics")
 
 	body := physics.NewBody("player", []physics.Fixture{
 		physics.NewBasicFixture(
@@ -31,20 +20,15 @@ func createPlayer(
 		),
 	})
 	body.Position = math.Vector{rendering.DisplayWidth - 200, 400}
-	physicsComponentManager.AddComponent(player, &physics.PhysicsComponent{Body: body})
-	interactionComponentManager.AddComponent(player, &InteractionComponent{})
-	healthComponentManager.AddComponent(player, &HealthComponent{Health: 100, MaxHealth: 100})
+	ctx.PhysicsComponentManager.AddComponent(player, &physics.PhysicsComponent{Body: body})
+	ctx.InteractionComponentManager.AddComponent(player, &InteractionComponent{})
+	ctx.HealthComponentManager.AddComponent(player, &HealthComponent{Health: 100, MaxHealth: 100})
 }
 
-func createRover(
-	entityManager *entity.Manager,
-	tagManager *tag.Manager,
-	groupManager *group.Manager,
-	physicsComponentManager *component.TypedManager[*physics.PhysicsComponent, physics.PhysicsComponentType],
-) {
-	rover := entityManager.Create()
-	tagManager.SetTag(rover, "rover")
-	groupManager.AddGroup(rover, "physics")
+func createRover(ctx *GameContext) {
+	rover := ctx.EntityManager.Create()
+	ctx.TagManager.SetTag(rover, "rover")
+	ctx.GroupManager.AddGroup(rover, "physics")
 
 	body := physics.NewBody("rover", []physics.Fixture{
 		physics.NewBasicFixture(
@@ -54,17 +38,13 @@ func createRover(
 		),
 	})
 	body.Position = math.Vector{rendering.DisplayWidth / 4, rendering.DisplayHeight / 4}
-	physicsComponentManager.AddComponent(rover, &physics.PhysicsComponent{Body: body})
+	ctx.PhysicsComponentManager.AddComponent(rover, &physics.PhysicsComponent{Body: body})
 }
 
-func createNPC(
-	entityManager *entity.Manager,
-	groupManager *group.Manager,
-	physicsComponentManager *component.TypedManager[*physics.PhysicsComponent, physics.PhysicsComponentType],
-) {
-	npc := entityManager.Create()
-	groupManager.AddGroup(npc, "npc")
-	groupManager.AddGroup(npc, "physics")
+func createNPC(ctx *GameContext) {
+	npc := ctx.EntityManager.Create()
+	ctx.GroupManager.AddGroup(npc, "npc")
+	ctx.GroupManager.AddGroup(npc, "physics")
 
 	points1 := make([]math.Vector, 5)
 	points2 := make([]math.Vector, 5)
@@ -91,15 +71,10 @@ func createNPC(
 		physics.NewFixture(points2, 0.1, 0.1, 0, 0),
 		physics.NewFixture(points3, 0.4, 0.1, 0, 0),
 	})
-	physicsComponentManager.AddComponent(npc, &physics.PhysicsComponent{Body: body})
+	ctx.PhysicsComponentManager.AddComponent(npc, &physics.PhysicsComponent{Body: body})
 }
 
-func createWalls(
-	entityManager *entity.Manager,
-	groupManager *group.Manager,
-	physicsComponentManager *component.TypedManager[*physics.PhysicsComponent, physics.PhysicsComponentType],
-	tileMap *maps.TileMap,
-) {
+func createWalls(ctx *GameContext) {
 	type Options struct {
 		name    string
 		w       float32
@@ -109,9 +84,9 @@ func createWalls(
 	}
 
 	build := func(i, j int, opts Options) {
-		entity := entityManager.Create()
-		groupManager.AddGroup(entity, "physics")
-		groupManager.AddGroup(entity, opts.name)
+		entity := ctx.EntityManager.Create()
+		ctx.GroupManager.AddGroup(entity, "physics")
+		ctx.GroupManager.AddGroup(entity, opts.name)
 
 		body := physics.NewBody(opts.name, []physics.Fixture{
 			physics.NewBasicFixture(
@@ -121,7 +96,7 @@ func createWalls(
 			),
 		})
 		body.Position = math.Vector{float32(j*64) + opts.jOffset, float32(i*64) + opts.iOffset}
-		physicsComponentManager.AddComponent(entity, &physics.PhysicsComponent{Body: body})
+		ctx.PhysicsComponentManager.AddComponent(entity, &physics.PhysicsComponent{Body: body})
 	}
 
 	parametersByBit := map[maps.TileBitIndex]Options{
@@ -135,10 +110,10 @@ func createWalls(
 		maps.DOOR_E_BIT:          {"door", 2, 32, 32, 64 - 1},
 	}
 
-	for i := 0; i < tileMap.Height(); i++ {
-		for j := 0; j < tileMap.Width(); j++ {
+	for i := 0; i < ctx.TileMap.Height(); i++ {
+		for j := 0; j < ctx.TileMap.Width(); j++ {
 			for bit, opts := range parametersByBit {
-				if tileMap.GetBit(i, j, bit) {
+				if ctx.TileMap.GetBit(i, j, bit) {
 					build(i, j, opts)
 				}
 			}

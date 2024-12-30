@@ -1,9 +1,6 @@
 package gameplay
 
 import (
-	"github.com/efritz/lunar-fever/internal/engine"
-	"github.com/efritz/lunar-fever/internal/engine/ecs/component"
-	"github.com/efritz/lunar-fever/internal/engine/ecs/entity"
 	"github.com/efritz/lunar-fever/internal/engine/physics"
 	"github.com/go-gl/glfw/v3.2/glfw"
 )
@@ -25,11 +22,11 @@ func (c *InteractionComponent) ComponentType() InteractionComponentType {
 //
 
 type interactionSystem struct {
-	*engine.Context
-	playerCollection            *entity.Collection
-	physicsComponentManager     *component.TypedManager[*physics.PhysicsComponent, physics.PhysicsComponentType]
-	interactionComponentManager *component.TypedManager[*InteractionComponent, InteractionComponentType]
-	healthComponentManager      *component.TypedManager[*HealthComponent, HealthComponentType]
+	*GameContext
+}
+
+func NewInteractionSystem(ctx *GameContext) *interactionSystem {
+	return &interactionSystem{GameContext: ctx}
 }
 
 func (s *interactionSystem) Init() {}
@@ -38,18 +35,18 @@ func (s *interactionSystem) Exit() {}
 var interactionCooldown = 0.5
 
 func (s *interactionSystem) Process(elapsedMs int64) {
-	for _, entity := range s.playerCollection.Entities() {
-		physicsComponent, ok := s.physicsComponentManager.GetComponent(entity)
+	for _, entity := range s.PlayerCollection.Entities() {
+		physicsComponent, ok := s.PhysicsComponentManager.GetComponent(entity)
 		if !ok {
 			return
 		}
 
-		interactionComponent, ok := s.interactionComponentManager.GetComponent(entity)
+		interactionComponent, ok := s.InteractionComponentManager.GetComponent(entity)
 		if !ok {
 			return
 		}
 
-		healthComponent, ok := s.healthComponentManager.GetComponent(entity)
+		healthComponent, ok := s.HealthComponentManager.GetComponent(entity)
 		if !ok {
 			return
 		}

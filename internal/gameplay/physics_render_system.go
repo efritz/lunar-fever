@@ -1,18 +1,16 @@
 package gameplay
 
 import (
-	"github.com/efritz/lunar-fever/internal/engine"
-	"github.com/efritz/lunar-fever/internal/engine/ecs/component"
-	"github.com/efritz/lunar-fever/internal/engine/ecs/entity"
-	"github.com/efritz/lunar-fever/internal/engine/physics"
 	"github.com/efritz/lunar-fever/internal/engine/rendering"
 )
 
 type physicsRenderSystem struct {
-	*engine.Context
-	entityCollection        *entity.Collection
-	physicsComponentManager *component.TypedManager[*physics.PhysicsComponent, physics.PhysicsComponentType]
-	emptyTexture            rendering.Texture
+	*GameContext
+	emptyTexture rendering.Texture
+}
+
+func NewPhysicsRenderSystem(ctx *GameContext) *physicsRenderSystem {
+	return &physicsRenderSystem{GameContext: ctx}
 }
 
 func (s *physicsRenderSystem) Init() {
@@ -28,8 +26,8 @@ func (s *physicsRenderSystem) Process(elapsedMs int64) {
 
 	s.SpriteBatch.Begin()
 
-	for _, entity := range s.entityCollection.Entities() {
-		component, ok := s.physicsComponentManager.GetComponent(entity)
+	for _, entity := range s.PhysicsCollection.Entities() {
+		component, ok := s.PhysicsComponentManager.GetComponent(entity)
 		if !ok || component.CollisionsDisabled {
 			continue
 		}

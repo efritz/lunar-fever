@@ -2,21 +2,19 @@ package gameplay
 
 import (
 	"github.com/efritz/lunar-fever/internal/common/math"
-	"github.com/efritz/lunar-fever/internal/engine"
-	"github.com/efritz/lunar-fever/internal/engine/ecs/component"
-	"github.com/efritz/lunar-fever/internal/engine/ecs/entity"
-	"github.com/efritz/lunar-fever/internal/engine/physics"
 	"github.com/efritz/lunar-fever/internal/engine/rendering"
 )
 
 type roverRenderSystem struct {
-	*engine.Context
-	roverCollection         *entity.Collection
-	physicsComponentManager *component.TypedManager[*physics.PhysicsComponent, physics.PhysicsComponentType]
-	emptyTexture            rendering.Texture
-	baseTexture             rendering.Texture
-	axleTexture             rendering.Texture
-	tireTexture             rendering.Texture
+	*GameContext
+	emptyTexture rendering.Texture
+	baseTexture  rendering.Texture
+	axleTexture  rendering.Texture
+	tireTexture  rendering.Texture
+}
+
+func NewRoverRenderSystem(ctx *GameContext) *roverRenderSystem {
+	return &roverRenderSystem{GameContext: ctx}
 }
 
 func (s *roverRenderSystem) Init() {
@@ -43,8 +41,8 @@ func (s *roverRenderSystem) Process(elapsedMs int64) {
 
 	s.SpriteBatch.Begin()
 
-	for _, entity := range s.roverCollection.Entities() {
-		component, ok := s.physicsComponentManager.GetComponent(entity)
+	for _, entity := range s.RoverCollection.Entities() {
+		component, ok := s.PhysicsComponentManager.GetComponent(entity)
 		if !ok {
 			continue
 		}

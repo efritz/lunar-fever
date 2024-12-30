@@ -4,24 +4,19 @@ import (
 	stdmath "math"
 
 	"github.com/efritz/lunar-fever/internal/common/math"
-	"github.com/efritz/lunar-fever/internal/engine"
-	"github.com/efritz/lunar-fever/internal/engine/ecs/component"
-	"github.com/efritz/lunar-fever/internal/engine/ecs/entity"
-	"github.com/efritz/lunar-fever/internal/engine/event"
-	"github.com/efritz/lunar-fever/internal/engine/physics"
 	"github.com/go-gl/glfw/v3.2/glfw"
 )
 
 type playerMovementSystem struct {
-	*engine.Context
-	eventManager            *event.Manager
-	playerCollection        *entity.Collection
-	physicsComponentManager *component.TypedManager[*physics.PhysicsComponent, physics.PhysicsComponentType]
-	healthComponentManager  *component.TypedManager[*HealthComponent, HealthComponentType]
+	*GameContext
+}
+
+func NewPlayerMovementSystem(ctx *GameContext) *playerMovementSystem {
+	return &playerMovementSystem{GameContext: ctx}
 }
 
 func (s *playerMovementSystem) Init() {
-	NewEntityDeathEventManager(s.eventManager).AddListener(s)
+	NewEntityDeathEventManager(s.GameContext.EventManager).AddListener(s)
 }
 
 func (s *playerMovementSystem) Exit() {}
@@ -54,13 +49,13 @@ func (g *playerMovementSystem) Process(elapsedMs int64) {
 	mx := g.Camera.Unprojectx(float32(g.Mouse.X()))
 	my := g.Camera.UnprojectY(float32(g.Mouse.Y()))
 
-	for _, entity := range g.playerCollection.Entities() {
-		physicsComponent, ok := g.physicsComponentManager.GetComponent(entity)
+	for _, entity := range g.PlayerCollection.Entities() {
+		physicsComponent, ok := g.PhysicsComponentManager.GetComponent(entity)
 		if !ok {
 			continue
 		}
 
-		if healthComponent, ok := g.healthComponentManager.GetComponent(entity); !ok || healthComponent.Health <= 0 {
+		if healthComponent, ok := g.HealthComponentManager.GetComponent(entity); !ok || healthComponent.Health <= 0 {
 			physicsComponent.Body.LinearVelocity = math.Vector{0, 0}
 			physicsComponent.Body.AngularVelocity = 0
 			continue

@@ -2,18 +2,16 @@ package gameplay
 
 import (
 	"github.com/efritz/lunar-fever/internal/common/math"
-	"github.com/efritz/lunar-fever/internal/engine"
-	"github.com/efritz/lunar-fever/internal/engine/ecs/component"
-	"github.com/efritz/lunar-fever/internal/engine/ecs/entity"
-	"github.com/efritz/lunar-fever/internal/engine/physics"
 	"github.com/efritz/lunar-fever/internal/engine/rendering"
 )
 
 type npcRenderSystem struct {
-	*engine.Context
-	npcCollection           *entity.Collection
-	physicsComponentManager *component.TypedManager[*physics.PhysicsComponent, physics.PhysicsComponentType]
-	texture                 rendering.Texture
+	*GameContext
+	texture rendering.Texture
+}
+
+func NewNpcRenderSystem(ctx *GameContext) *npcRenderSystem {
+	return &npcRenderSystem{GameContext: ctx}
 }
 
 func (s *npcRenderSystem) Init() {
@@ -25,8 +23,8 @@ func (s *npcRenderSystem) Exit() {}
 func (s *npcRenderSystem) Process(elapsedMs int64) {
 	s.SpriteBatch.Begin()
 
-	for _, entity := range s.npcCollection.Entities() {
-		component, ok := s.physicsComponentManager.GetComponent(entity)
+	for _, entity := range s.NpcCollection.Entities() {
+		component, ok := s.PhysicsComponentManager.GetComponent(entity)
 		if !ok {
 			continue
 		}

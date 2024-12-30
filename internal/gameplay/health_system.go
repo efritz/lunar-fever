@@ -1,8 +1,6 @@
 package gameplay
 
 import (
-	"github.com/efritz/lunar-fever/internal/engine"
-	"github.com/efritz/lunar-fever/internal/engine/ecs/component"
 	"github.com/efritz/lunar-fever/internal/engine/ecs/entity"
 	"github.com/efritz/lunar-fever/internal/engine/event"
 	"github.com/go-gl/glfw/v3.2/glfw"
@@ -59,25 +57,16 @@ func (e EntityDeathEvent) Notify(l EntityDeathListener)    { l.OnEntityDeath(e) 
 //
 
 type healthSystem struct {
-	*engine.Context
+	*GameContext
 	entityDamagedEventManager *event.TypedManager[EntityDamagedEvent, entityDamagedEventType, EntityDamagedListener]
 	entityDeathEventManager   *event.TypedManager[EntityDeathEvent, entityDeathEventType, EntityDeathListener]
-	healthCollection          *entity.Collection
-	healthComponentManager    *component.TypedManager[*HealthComponent, HealthComponentType]
 }
 
-func NewHealthSystem(
-	ctx *engine.Context,
-	eventManager *event.Manager,
-	healthCollection *entity.Collection,
-	healthComponentManager *component.TypedManager[*HealthComponent, HealthComponentType],
-) *healthSystem {
+func NewHealthSystem(ctx *GameContext) *healthSystem {
 	return &healthSystem{
-		Context:                   ctx,
-		entityDamagedEventManager: NewEntityDamagedEventManager(eventManager),
-		entityDeathEventManager:   NewEntityDeathEventManager(eventManager),
-		healthCollection:          healthCollection,
-		healthComponentManager:    healthComponentManager,
+		GameContext:               ctx,
+		entityDamagedEventManager: NewEntityDamagedEventManager(ctx.EventManager),
+		entityDeathEventManager:   NewEntityDeathEventManager(ctx.EventManager),
 	}
 }
 
@@ -89,8 +78,8 @@ func (s *healthSystem) Exit() {}
 
 func (s *healthSystem) Process(elapsedMs int64) {
 	// Temporary implementation
-	for _, entity := range s.healthCollection.Entities() {
-		healthComponent, ok := s.healthComponentManager.GetComponent(entity)
+	for _, entity := range s.PlayerCollection.Entities() {
+		healthComponent, ok := s.HealthComponentManager.GetComponent(entity)
 		if !ok {
 			return
 		}
@@ -103,7 +92,7 @@ func (s *healthSystem) Process(elapsedMs int64) {
 }
 
 func (s *healthSystem) OnEntityDamaged(e EntityDamagedEvent) {
-	healthComponent, ok := s.healthComponentManager.GetComponent(e.entity)
+	healthComponent, ok := s.HealthComponentManager.GetComponent(e.entity)
 	if !ok {
 		return
 	}
