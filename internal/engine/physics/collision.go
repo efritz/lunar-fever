@@ -14,7 +14,7 @@ type CollisionResolutionSystem struct {
 }
 
 func NewCollisionResolution(eventManager *event.Manager, componentManager *component.Manager) system.System {
-	physicsComponentManager := component.NewTypedManager[*PhysicsComponent, PhysicsComponentType](componentManager, eventManager)
+	physicsComponentManager := component.NewTypedManager[*PhysicsComponent](componentManager, eventManager)
 	physicsComponentMatcher := component.NewEntityMatcher(componentManager, physicsComponentType)
 	collection := entity.NewCollection(physicsComponentMatcher, eventManager)
 

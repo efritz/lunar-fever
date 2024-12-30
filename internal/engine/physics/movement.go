@@ -7,47 +7,13 @@ import (
 	"github.com/efritz/lunar-fever/internal/engine/event"
 )
 
-type PhysicsComponent struct {
-	Body               *Body
-	CollisionsDisabled bool
-}
-
-type PhysicsComponentType struct{}
-
-var physicsComponentType = PhysicsComponentType{}
-
-func (c *PhysicsComponent) ComponentType() PhysicsComponentType {
-	return physicsComponentType
-}
-
-//
-//
-
-type (
-	EntityMovedEventType    struct{}
-	EntityMovedEvent        struct{ Entity entity.Entity }
-	EntityMovedListener     interface{ OnEntityMoved(e EntityMovedEvent) }
-	EntityMovedEventManager = event.TypedManager[EntityMovedEvent, EntityMovedEventType, EntityMovedListener]
-)
-
-var (
-	entityCreatedEventType     = EntityMovedEventType{}
-	NewEntityMovedEventManager = event.NewTypedManager[EntityMovedEvent, EntityMovedEventType, EntityMovedListener]
-)
-
-func (e EntityMovedEvent) EventType() EntityMovedEventType { return entityCreatedEventType }
-func (e EntityMovedEvent) Notify(l EntityMovedListener)    { l.OnEntityMoved(e) }
-
-//
-//
-
 type PhysicsComponentSystemDelegate struct {
-	entityMovedEventManager *event.TypedManager[EntityMovedEvent, EntityMovedEventType, EntityMovedListener]
+	entityMovedEventManager *EntityMovedEventManager
 	physicsComponentManager *component.TypedManager[*PhysicsComponent, PhysicsComponentType]
 }
 
 func NewPhysicsComponentSystem(eventManager *event.Manager, componentManager *component.Manager) system.System {
-	physicsComponentManager := component.NewTypedManager[*PhysicsComponent, PhysicsComponentType](componentManager, eventManager)
+	physicsComponentManager := component.NewTypedManager[*PhysicsComponent](componentManager, eventManager)
 	physicsComponentMatcher := component.NewEntityMatcher(componentManager, physicsComponentType)
 	collection := entity.NewCollection(physicsComponentMatcher, eventManager)
 

@@ -6,22 +6,6 @@ import (
 	"github.com/go-gl/glfw/v3.2/glfw"
 )
 
-type InteractionComponent struct {
-	Interacting   bool
-	CooldownTimer int64
-}
-
-type InteractionComponentType struct{}
-
-var interactionComponentType = InteractionComponentType{}
-
-func (c *InteractionComponent) ComponentType() InteractionComponentType {
-	return interactionComponentType
-}
-
-//
-//
-
 type interactionSystem struct {
 	*GameContext
 }
