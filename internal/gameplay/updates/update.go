@@ -1,4 +1,4 @@
-package menu
+package updates
 
 import (
 	"bytes"
@@ -16,7 +16,12 @@ import (
 	"syscall"
 )
 
-func NewUpdater() (*updater, error) {
+type Updater struct {
+	binaryBasename string
+	updateChecksum string
+}
+
+func NewUpdater() (*Updater, error) {
 	content, err := readFileFromServer("manifest.json")
 	if err != nil {
 		return nil, err
@@ -37,7 +42,7 @@ func NewUpdater() (*updater, error) {
 	}
 
 	if len(matches) != 2 {
-		return &updater{}, nil
+		return &Updater{}, nil
 	}
 
 	sort.Strings(matches)
@@ -47,18 +52,13 @@ func NewUpdater() (*updater, error) {
 		return nil, err
 	}
 
-	return &updater{
+	return &Updater{
 		binaryBasename: manifest.Files[0],
 		updateChecksum: strings.TrimSpace(string(checksum)),
 	}, nil
 }
 
-type updater struct {
-	binaryBasename string
-	updateChecksum string
-}
-
-func (u *updater) HasUpdate() (bool, error) {
+func (u *Updater) HasUpdate() (bool, error) {
 	if u.updateChecksum == "" {
 		return false, nil
 	}
@@ -71,7 +71,7 @@ func (u *updater) HasUpdate() (bool, error) {
 	return binaryChecksum != u.updateChecksum, nil
 }
 
-func (u *updater) Update() error {
+func (u *Updater) Update() error {
 	contents, err := u.getBinary()
 	if err != nil {
 		return err
@@ -119,7 +119,7 @@ func (u *updater) Update() error {
 	return syscall.Exec(targetPath, append([]string{targetPath}, os.Args[1:]...), os.Environ())
 }
 
-func (u *updater) getBinary() ([]byte, error) {
+func (u *Updater) getBinary() ([]byte, error) {
 	contents, err := readFileFromServer(u.binaryBasename)
 	if err != nil {
 		return nil, err

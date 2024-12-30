@@ -7,10 +7,11 @@ import (
 	"github.com/efritz/lunar-fever/internal/engine"
 	"github.com/efritz/lunar-fever/internal/engine/view"
 	"github.com/efritz/lunar-fever/internal/gameplay/maps/editor"
+	"github.com/efritz/lunar-fever/internal/gameplay/updates"
 )
 
 func NewMainMenu(engineCtx *engine.Context, gameplayFactory func(*engine.Context) view.View) view.View {
-	updater, err := NewUpdater()
+	updater, err := updates.NewUpdater()
 	if err != nil {
 		panic(err)
 	}
@@ -31,7 +32,7 @@ func NewMainMenu(engineCtx *engine.Context, gameplayFactory func(*engine.Context
 }
 
 type downloadUpdateMenuEntry struct {
-	updater *updater
+	updater *updates.Updater
 }
 
 func (e *downloadUpdateMenuEntry) OnSelect() {
