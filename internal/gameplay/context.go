@@ -30,7 +30,6 @@ type GameContext struct {
 	PlayerCollection    *entity.Collection
 	ScientistCollection *entity.Collection
 	RoverCollection     *entity.Collection
-	NpcCollection       *entity.Collection
 	DoorCollection      *entity.Collection
 	PhysicsCollection   *entity.Collection
 }
@@ -60,7 +59,6 @@ func NewGameContext(engineCtx *engine.Context, tileMap *maps.TileMap) *GameConte
 		PlayerCollection:    entity.NewCollection(tag.NewEntityMatcher(tagManager, "player"), eventManager),
 		ScientistCollection: entity.NewCollection(group.NewEntityMatcher(groupManager, "scientist"), eventManager),
 		RoverCollection:     entity.NewCollection(tag.NewEntityMatcher(tagManager, "rover"), eventManager),
-		NpcCollection:       entity.NewCollection(group.NewEntityMatcher(groupManager, "npc"), eventManager),
 		DoorCollection:      entity.NewCollection(group.NewEntityMatcher(groupManager, "door"), eventManager),
 		PhysicsCollection:   entity.NewCollection(group.NewEntityMatcher(groupManager, "physics"), eventManager),
 	}

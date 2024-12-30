@@ -58,7 +58,6 @@ func NewGameplay(engineCtx *engine.Context) view.View {
 	renderSystemManager.Add(maps.NewBaseRenderSystem(engineCtx, tileMap), 1)
 	renderSystemManager.Add(NewScientistRenderSystem(gameCtx), 2)
 	renderSystemManager.Add(NewRoverRenderSystem(gameCtx), 2)
-	renderSystemManager.Add(NewNpcRenderSystem(gameCtx), 2)
 	renderSystemManager.Add(NewPhysicsRenderSystem(gameCtx), 3)
 	renderSystemManager.Add(NewDoorRenderSystem(gameCtx), 4)
 	renderSystemManager.Add(NewInteractionRenderSystem(gameCtx), 5)
@@ -66,7 +65,6 @@ func NewGameplay(engineCtx *engine.Context) view.View {
 	createPlayer(gameCtx)
 	createScientist(gameCtx)
 	createRover(gameCtx)
-	createNPC(gameCtx)
 	createWalls(gameCtx)
 
 	return &Gameplay{

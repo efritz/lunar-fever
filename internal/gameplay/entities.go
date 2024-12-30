@@ -59,39 +59,6 @@ func createRover(ctx *GameContext) {
 	ctx.PhysicsComponentManager.AddComponent(rover, &physics.PhysicsComponent{Body: body})
 }
 
-func createNPC(ctx *GameContext) {
-	npc := ctx.EntityManager.Create()
-	ctx.GroupManager.AddGroup(npc, "npc")
-	ctx.GroupManager.AddGroup(npc, "physics")
-
-	points1 := make([]math.Vector, 5)
-	points2 := make([]math.Vector, 5)
-	points3 := make([]math.Vector, 5)
-
-	tx := float32(40)
-	ty := float32(40)
-	hw := float32(32)
-	hh := float32(48)
-
-	for _, vectors := range [][]math.Vector{points1, points2, points3} {
-		tx += hw * 2.25
-		ty += hh / 2
-
-		vectors[0] = math.Vector{tx, ty + hh*2}
-		vectors[1] = math.Vector{tx + hw, ty - hh}
-		vectors[2] = math.Vector{tx - hw, ty + hh}
-		vectors[3] = math.Vector{tx + hw, ty + hh}
-		vectors[4] = math.Vector{tx - hw, ty - hh}
-	}
-
-	body := physics.NewBody("npc", []physics.Fixture{
-		physics.NewFixture(points1, 0.1, 0.1, 0, 0),
-		physics.NewFixture(points2, 0.1, 0.1, 0, 0),
-		physics.NewFixture(points3, 0.4, 0.1, 0, 0),
-	})
-	ctx.PhysicsComponentManager.AddComponent(npc, &physics.PhysicsComponent{Body: body})
-}
-
 func createWalls(ctx *GameContext) {
 	type Options struct {
 		name    string
