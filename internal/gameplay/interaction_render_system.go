@@ -1,6 +1,7 @@
 package gameplay
 
 import (
+	"github.com/efritz/lunar-fever/internal/engine/ecs/system"
 	"github.com/efritz/lunar-fever/internal/engine/rendering"
 )
 
@@ -9,7 +10,7 @@ type interactionRenderSystem struct {
 	emptyTexture rendering.Texture
 }
 
-func NewInteractionRenderSystem(ctx *GameContext) *interactionRenderSystem {
+func NewInteractionRenderSystem(ctx *GameContext) system.System {
 	return &interactionRenderSystem{GameContext: ctx}
 }
 

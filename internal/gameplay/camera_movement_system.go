@@ -1,6 +1,7 @@
 package gameplay
 
 import (
+	"github.com/efritz/lunar-fever/internal/engine/ecs/system"
 	"github.com/go-gl/glfw/v3.2/glfw"
 )
 
@@ -8,7 +9,7 @@ type cameraMovementSystem struct {
 	*GameContext
 }
 
-func NewCameraMovementSystem(ctx *GameContext) *cameraMovementSystem {
+func NewCameraMovementSystem(ctx *GameContext) system.System {
 	return &cameraMovementSystem{GameContext: ctx}
 }
 

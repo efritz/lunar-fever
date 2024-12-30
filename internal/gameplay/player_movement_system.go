@@ -4,6 +4,7 @@ import (
 	stdmath "math"
 
 	"github.com/efritz/lunar-fever/internal/common/math"
+	"github.com/efritz/lunar-fever/internal/engine/ecs/system"
 	"github.com/go-gl/glfw/v3.2/glfw"
 )
 
@@ -11,7 +12,7 @@ type playerMovementSystem struct {
 	*GameContext
 }
 
-func NewPlayerMovementSystem(ctx *GameContext) *playerMovementSystem {
+func NewPlayerMovementSystem(ctx *GameContext) system.System {
 	return &playerMovementSystem{GameContext: ctx}
 }
 

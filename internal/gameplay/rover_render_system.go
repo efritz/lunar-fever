@@ -2,6 +2,7 @@ package gameplay
 
 import (
 	"github.com/efritz/lunar-fever/internal/common/math"
+	"github.com/efritz/lunar-fever/internal/engine/ecs/system"
 	"github.com/efritz/lunar-fever/internal/engine/rendering"
 )
 
@@ -13,7 +14,7 @@ type roverRenderSystem struct {
 	tireTexture  rendering.Texture
 }
 
-func NewRoverRenderSystem(ctx *GameContext) *roverRenderSystem {
+func NewRoverRenderSystem(ctx *GameContext) system.System {
 	return &roverRenderSystem{GameContext: ctx}
 }
 

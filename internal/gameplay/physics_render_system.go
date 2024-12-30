@@ -1,6 +1,7 @@
 package gameplay
 
 import (
+	"github.com/efritz/lunar-fever/internal/engine/ecs/system"
 	"github.com/efritz/lunar-fever/internal/engine/rendering"
 )
 
@@ -9,7 +10,7 @@ type physicsRenderSystem struct {
 	emptyTexture rendering.Texture
 }
 
-func NewPhysicsRenderSystem(ctx *GameContext) *physicsRenderSystem {
+func NewPhysicsRenderSystem(ctx *GameContext) system.System {
 	return &physicsRenderSystem{GameContext: ctx}
 }
 

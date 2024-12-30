@@ -1,6 +1,7 @@
 package gameplay
 
 import (
+	"github.com/efritz/lunar-fever/internal/engine/ecs/system"
 	"github.com/efritz/lunar-fever/internal/engine/physics"
 )
 
@@ -8,7 +9,7 @@ type doorOpenerSystem struct {
 	*GameContext
 }
 
-func NewDoorOpenerSystem(ctx *GameContext) *doorOpenerSystem {
+func NewDoorOpenerSystem(ctx *GameContext) system.System {
 	return &doorOpenerSystem{GameContext: ctx}
 }
 

@@ -3,6 +3,7 @@ package gameplay
 import (
 	"github.com/efritz/lunar-fever/internal/common/math"
 	"github.com/efritz/lunar-fever/internal/engine/ecs/entity"
+	"github.com/efritz/lunar-fever/internal/engine/ecs/system"
 	"github.com/efritz/lunar-fever/internal/engine/physics"
 	"github.com/efritz/lunar-fever/internal/engine/rendering"
 )
@@ -29,7 +30,7 @@ type renderDetails struct {
 	idleRepeats        int
 }
 
-func NewScientistRenderSystem(ctx *GameContext) *scientistRenderSystem {
+func NewScientistRenderSystem(ctx *GameContext) system.System {
 	return &scientistRenderSystem{
 		GameContext:   ctx,
 		renderDetails: map[int64]*renderDetails{},

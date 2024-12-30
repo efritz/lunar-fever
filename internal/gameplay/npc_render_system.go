@@ -2,6 +2,7 @@ package gameplay
 
 import (
 	"github.com/efritz/lunar-fever/internal/common/math"
+	"github.com/efritz/lunar-fever/internal/engine/ecs/system"
 	"github.com/efritz/lunar-fever/internal/engine/rendering"
 )
 
@@ -10,7 +11,7 @@ type npcRenderSystem struct {
 	texture rendering.Texture
 }
 
-func NewNpcRenderSystem(ctx *GameContext) *npcRenderSystem {
+func NewNpcRenderSystem(ctx *GameContext) system.System {
 	return &npcRenderSystem{GameContext: ctx}
 }
 

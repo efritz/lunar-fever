@@ -18,6 +18,10 @@ type CameraDirector struct {
 	totalTime         int64
 }
 
+func NewCameraDirector(ctx *engine.Context) *CameraDirector {
+	return &CameraDirector{Context: ctx}
+}
+
 func (d *CameraDirector) Init() {}
 func (d *CameraDirector) Exit() {}
 

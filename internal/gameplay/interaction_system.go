@@ -1,6 +1,7 @@
 package gameplay
 
 import (
+	"github.com/efritz/lunar-fever/internal/engine/ecs/system"
 	"github.com/efritz/lunar-fever/internal/engine/physics"
 	"github.com/go-gl/glfw/v3.2/glfw"
 )
@@ -25,7 +26,7 @@ type interactionSystem struct {
 	*GameContext
 }
 
-func NewInteractionSystem(ctx *GameContext) *interactionSystem {
+func NewInteractionSystem(ctx *GameContext) system.System {
 	return &interactionSystem{GameContext: ctx}
 }
 

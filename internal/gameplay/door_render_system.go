@@ -3,6 +3,7 @@ package gameplay
 import (
 	stdmath "math"
 
+	"github.com/efritz/lunar-fever/internal/engine/ecs/system"
 	"github.com/efritz/lunar-fever/internal/engine/rendering"
 )
 
@@ -11,7 +12,7 @@ type doorRenderSystem struct {
 	texture rendering.Texture
 }
 
-func NewDoorRenderSystem(ctx *GameContext) *doorRenderSystem {
+func NewDoorRenderSystem(ctx *GameContext) system.System {
 	return &doorRenderSystem{GameContext: ctx}
 }
 
