@@ -50,11 +50,12 @@ type GameContext struct {
 	HealthComponentManager      *component.TypedManager[*HealthComponent, HealthComponentType]
 	InteractionComponentManager *component.TypedManager[*InteractionComponent, InteractionComponentType]
 
-	PlayerCollection  *entity.Collection
-	RoverCollection   *entity.Collection
-	NpcCollection     *entity.Collection
-	DoorCollection    *entity.Collection
-	PhysicsCollection *entity.Collection
+	PlayerCollection    *entity.Collection
+	ScientistCollection *entity.Collection
+	RoverCollection     *entity.Collection
+	NpcCollection       *entity.Collection
+	DoorCollection      *entity.Collection
+	PhysicsCollection   *entity.Collection
 }
 
 func NewGameContext(engineCtx *engine.Context, tileMap *maps.TileMap) *GameContext {
@@ -79,11 +80,12 @@ func NewGameContext(engineCtx *engine.Context, tileMap *maps.TileMap) *GameConte
 		HealthComponentManager:      component.NewTypedManager[*HealthComponent](componentManager, eventManager),
 		InteractionComponentManager: component.NewTypedManager[*InteractionComponent](componentManager, eventManager),
 
-		PlayerCollection:  entity.NewCollection(tag.NewEntityMatcher(tagManager, "player"), eventManager),
-		RoverCollection:   entity.NewCollection(tag.NewEntityMatcher(tagManager, "rover"), eventManager),
-		NpcCollection:     entity.NewCollection(group.NewEntityMatcher(groupManager, "npc"), eventManager),
-		DoorCollection:    entity.NewCollection(group.NewEntityMatcher(groupManager, "door"), eventManager),
-		PhysicsCollection: entity.NewCollection(group.NewEntityMatcher(groupManager, "physics"), eventManager),
+		PlayerCollection:    entity.NewCollection(tag.NewEntityMatcher(tagManager, "player"), eventManager),
+		ScientistCollection: entity.NewCollection(group.NewEntityMatcher(groupManager, "scientist"), eventManager),
+		RoverCollection:     entity.NewCollection(tag.NewEntityMatcher(tagManager, "rover"), eventManager),
+		NpcCollection:       entity.NewCollection(group.NewEntityMatcher(groupManager, "npc"), eventManager),
+		DoorCollection:      entity.NewCollection(group.NewEntityMatcher(groupManager, "door"), eventManager),
+		PhysicsCollection:   entity.NewCollection(group.NewEntityMatcher(groupManager, "physics"), eventManager),
 	}
 }
 
@@ -113,7 +115,7 @@ func NewGameplay(engineCtx *engine.Context) view.View {
 	renderSystemManager := system.NewManager()
 	renderSystemManager.Add(NewRegolithRenderSystem(gameCtx), 0)
 	renderSystemManager.Add(maps.NewBaseRenderSystem(engineCtx, tileMap), 1)
-	renderSystemManager.Add(NewPlayerRenderSystem(gameCtx), 2)
+	renderSystemManager.Add(NewScientistRenderSystem(gameCtx), 2)
 	renderSystemManager.Add(NewRoverRenderSystem(gameCtx), 2)
 	renderSystemManager.Add(NewNpcRenderSystem(gameCtx), 2)
 	renderSystemManager.Add(NewPhysicsRenderSystem(gameCtx), 3)
@@ -121,6 +123,7 @@ func NewGameplay(engineCtx *engine.Context) view.View {
 	renderSystemManager.Add(NewInteractionRenderSystem(gameCtx), 5)
 
 	createPlayer(gameCtx)
+	createScientist(gameCtx)
 	createRover(gameCtx)
 	createNPC(gameCtx)
 	createWalls(gameCtx)

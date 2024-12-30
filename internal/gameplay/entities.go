@@ -10,9 +10,10 @@ import (
 func createPlayer(ctx *GameContext) {
 	player := ctx.EntityManager.Create()
 	ctx.TagManager.SetTag(player, "player")
+	ctx.GroupManager.AddGroup(player, "scientist")
 	ctx.GroupManager.AddGroup(player, "physics")
 
-	body := physics.NewBody("player", []physics.Fixture{
+	body := physics.NewBody("scientist", []physics.Fixture{
 		physics.NewBasicFixture(
 			0, 0, 48/2, 48/2, // bounds
 			0.3, 0.2, // material
@@ -22,6 +23,23 @@ func createPlayer(ctx *GameContext) {
 	body.Position = math.Vector{rendering.DisplayWidth - 200, 400}
 	ctx.PhysicsComponentManager.AddComponent(player, &physics.PhysicsComponent{Body: body})
 	ctx.InteractionComponentManager.AddComponent(player, &InteractionComponent{})
+	ctx.HealthComponentManager.AddComponent(player, &HealthComponent{Health: 100, MaxHealth: 100})
+}
+
+func createScientist(ctx *GameContext) {
+	player := ctx.EntityManager.Create()
+	ctx.GroupManager.AddGroup(player, "scientist")
+	ctx.GroupManager.AddGroup(player, "physics")
+
+	body := physics.NewBody("scientist", []physics.Fixture{
+		physics.NewBasicFixture(
+			0, 0, 48/2, 48/2, // bounds
+			0.3, 0.2, // material
+			0, 0, // friction
+		),
+	})
+	body.Position = math.Vector{rendering.DisplayWidth - 100, 300}
+	ctx.PhysicsComponentManager.AddComponent(player, &physics.PhysicsComponent{Body: body})
 	ctx.HealthComponentManager.AddComponent(player, &HealthComponent{Health: 100, MaxHealth: 100})
 }
 

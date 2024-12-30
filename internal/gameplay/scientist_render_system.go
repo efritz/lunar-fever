@@ -2,36 +2,41 @@ package gameplay
 
 import (
 	"github.com/efritz/lunar-fever/internal/common/math"
+	"github.com/efritz/lunar-fever/internal/engine/ecs/entity"
 	"github.com/efritz/lunar-fever/internal/engine/physics"
 	"github.com/efritz/lunar-fever/internal/engine/rendering"
 )
 
-type playerRenderSystem struct {
+type scientistRenderSystem struct {
 	*GameContext
-	emptyTexture       rendering.Texture
-	headAtlas          rendering.Texture
-	walkAtlases        []rendering.Texture
-	runAtlases         []rendering.Texture
-	interactAtlases    []rendering.Texture
-	idleAtlas          []rendering.Texture
-	deathAtlas         []rendering.Texture
+	emptyTexture    rendering.Texture
+	headAtlas       rendering.Texture
+	walkAtlases     []rendering.Texture
+	runAtlases      []rendering.Texture
+	interactAtlases []rendering.Texture
+	idleAtlas       []rendering.Texture
+	deathAtlas      []rendering.Texture
+	renderDetails   map[int64]*renderDetails
+}
+
+type renderDetails struct {
 	lastAnimationFrame rendering.Texture
 	animationQueue     *animationQueue
 	distanceTraveled   float32
 	wasMoving          bool
 	died               bool
-
-	idleTimer   int64
-	idleRepeats int
+	idleTimer          int64
+	idleRepeats        int
 }
 
-func NewPlayerRenderSystem(ctx *GameContext) *playerRenderSystem {
-	return &playerRenderSystem{
-		GameContext: ctx,
+func NewScientistRenderSystem(ctx *GameContext) *scientistRenderSystem {
+	return &scientistRenderSystem{
+		GameContext:   ctx,
+		renderDetails: map[int64]*renderDetails{},
 	}
 }
 
-func (s *playerRenderSystem) Init() {
+func (s *scientistRenderSystem) Init() {
 	s.emptyTexture = s.TextureLoader.Load("base").Region(7*32, 1*32, 32, 32)
 	s.headAtlas = s.TextureLoader.Load("character/headspack/head_1/head_1_1").Region(0, 0, 64, 64)
 	s.walkAtlases = []rendering.Texture{
@@ -79,12 +84,9 @@ func (s *playerRenderSystem) Init() {
 		s.TextureLoader.Load("character/scientist_1/die_1/sci_fall_1_5").Region(0, 0, 64, 128),
 		s.TextureLoader.Load("character/scientist_1/die_1/sci_fall_1_6").Region(0, 0, 64, 128),
 	}
-
-	s.lastAnimationFrame = s.walkAtlases[2]
-	s.animationQueue = &animationQueue{}
 }
 
-func (s *playerRenderSystem) Exit() {}
+func (s *scientistRenderSystem) Exit() {}
 
 const (
 	minStartAnimationSpeed    = 0.05 // Minimum speed to start animation
@@ -96,147 +98,160 @@ const (
 	idleAnimationRepeats      = 3
 )
 
-func (s *playerRenderSystem) Process(elapsedMs int64) {
+func (s *scientistRenderSystem) Process(elapsedMs int64) {
 	s.SpriteBatch.Begin()
 
-	for _, entity := range s.PlayerCollection.Entities() {
-		physicsComponent, ok := s.PhysicsComponentManager.GetComponent(entity)
-		if !ok {
-			continue
-		}
-
-		interacting := false
-		interactionComponent, ok := s.InteractionComponentManager.GetComponent(entity)
-		if ok {
-			interacting = interactionComponent.Interacting
-		}
-
-		dead := false
-		healthComponent, ok := s.HealthComponentManager.GetComponent(entity)
-		if ok {
-			dead = healthComponent.Health <= 0
-		}
-
-		if dead {
-			rotate := func(v math.Vector, angle float32) math.Vector {
-				sinA := math.Sin32(angle)
-				cosA := math.Cos32(angle)
-				return math.Vector{
-					X: v.X*cosA - v.Y*sinA,
-					Y: v.X*sinA + v.Y*cosA,
-				}
-			}
-
-			if physicsComponent.Body.Name == "player" {
-				old := physicsComponent.Body
-				physicsComponent.Body = physics.NewBody("player-dead", []physics.Fixture{
-					physics.NewBasicFixture(
-						0, 0, 48/2, 48, // bounds
-						0.3, 0.2, // material
-						0, 0, // friction
-					),
-				})
-				physicsComponent.Body.Position = old.Position.Add(rotate(math.Vector{0, -(48 / 2)}, old.Orient))
-				physicsComponent.Body.Orient = old.Orient
-				physicsComponent.Body.Rotation = old.Rotation
-			}
-		}
-
-		x1, y1, x2, y2 := physicsComponent.Body.NonorientedBound()
-		w := x2 - x1
-		h := y2 - y1
-
-		if dead {
-			if !s.died && s.animationQueue.Empty() {
-				s.died = true
-				s.animationQueue.Load(s.deathAtlas)
-			}
-
-			// Attempt to pop the next frame from the animation queue
-			if frame, ok := s.animationQueue.Texture(elapsedMs); ok {
-				s.lastAnimationFrame = frame
-			}
-
-			s.SpriteBatch.Draw(s.lastAnimationFrame, x1, y1, w, h, rendering.WithRotation(physicsComponent.Body.Orient), rendering.WithOrigin(w/2, h/2))
-		} else {
-			// Draw body
-			s.SpriteBatch.Draw(s.selectBodyTexture(physicsComponent, interacting, elapsedMs), x1, y1, w, h, rendering.WithRotation(physicsComponent.Body.Orient), rendering.WithOrigin(w/2, h/2))
-
-			// Always draw head
-			s.SpriteBatch.Draw(s.headAtlas, x1, y1, w, h, rendering.WithRotation(physicsComponent.Body.Orient), rendering.WithOrigin(w/2, h/2))
-		}
+	for _, entity := range s.ScientistCollection.Entities() {
+		s.render(elapsedMs, entity)
 	}
 
 	s.SpriteBatch.End()
 }
 
-func (s *playerRenderSystem) selectBodyTexture(component *physics.PhysicsComponent, interacting bool, elapsedMs int64) rendering.Texture {
-	if speed := component.Body.LinearVelocity.Len(); s.canWalk(speed) {
-		// Animate movement
-		s.idleTimer = 0
-		s.idleRepeats = 0
-		s.wasMoving = true
-		s.animationQueue.Reset()
-		s.lastAnimationFrame = s.selectMovingTexture(speed, elapsedMs)
+func (s *scientistRenderSystem) render(elapsedMs int64, entity entity.Entity) {
+	physicsComponent, ok := s.PhysicsComponentManager.GetComponent(entity)
+	if !ok {
+		return
+	}
+
+	details, ok := s.renderDetails[entity.ID]
+	if !ok {
+		details = &renderDetails{
+			lastAnimationFrame: s.walkAtlases[2],
+			animationQueue:     &animationQueue{},
+		}
+		s.renderDetails[entity.ID] = details
+	}
+
+	interacting := false
+	interactionComponent, ok := s.InteractionComponentManager.GetComponent(entity)
+	if ok {
+		interacting = interactionComponent.Interacting
+	}
+
+	dead := false
+	healthComponent, ok := s.HealthComponentManager.GetComponent(entity)
+	if ok {
+		dead = healthComponent.Health <= 0
+	}
+
+	if dead {
+		rotate := func(v math.Vector, angle float32) math.Vector {
+			sinA := math.Sin32(angle)
+			cosA := math.Cos32(angle)
+			return math.Vector{
+				X: v.X*cosA - v.Y*sinA,
+				Y: v.X*sinA + v.Y*cosA,
+			}
+		}
+
+		if physicsComponent.Body.Name == "scientist" {
+			old := physicsComponent.Body
+			physicsComponent.Body = physics.NewBody("scientist-dead", []physics.Fixture{
+				physics.NewBasicFixture(
+					0, 0, 48/2, 48, // bounds
+					0.3, 0.2, // material
+					0, 0, // friction
+				),
+			})
+			physicsComponent.Body.Position = old.Position.Add(rotate(math.Vector{0, -(48 / 2)}, old.Orient))
+			physicsComponent.Body.Orient = old.Orient
+			physicsComponent.Body.Rotation = old.Rotation
+		}
+	}
+
+	x1, y1, x2, y2 := physicsComponent.Body.NonorientedBound()
+	w := x2 - x1
+	h := y2 - y1
+
+	if dead {
+		if !details.died && details.animationQueue.Empty() {
+			details.died = true
+			details.animationQueue.Load(s.deathAtlas)
+		}
+
+		// Attempt to pop the next frame from the animation queue
+		if frame, ok := details.animationQueue.Texture(elapsedMs); ok {
+			details.lastAnimationFrame = frame
+		}
+
+		s.SpriteBatch.Draw(details.lastAnimationFrame, x1, y1, w, h, rendering.WithRotation(physicsComponent.Body.Orient), rendering.WithOrigin(w/2, h/2))
 	} else {
-		if s.wasMoving {
+		// Draw body
+		s.SpriteBatch.Draw(s.selectBodyTexture(physicsComponent, interacting, details, elapsedMs), x1, y1, w, h, rendering.WithRotation(physicsComponent.Body.Orient), rendering.WithOrigin(w/2, h/2))
+
+		// Always draw head
+		s.SpriteBatch.Draw(s.headAtlas, x1, y1, w, h, rendering.WithRotation(physicsComponent.Body.Orient), rendering.WithOrigin(w/2, h/2))
+	}
+}
+
+func (s *scientistRenderSystem) selectBodyTexture(component *physics.PhysicsComponent, interacting bool, details *renderDetails, elapsedMs int64) rendering.Texture {
+	if speed := component.Body.LinearVelocity.Len(); s.canWalk(details, speed) {
+		// Animate movement
+		details.idleTimer = 0
+		details.idleRepeats = 0
+		details.wasMoving = true
+		details.animationQueue.Reset()
+		details.lastAnimationFrame = s.selectMovingTexture(speed, details, elapsedMs)
+	} else {
+		if details.wasMoving {
 			// Transition to idle animation
-			s.idleTimer = 0
-			s.idleRepeats = 0
-			s.wasMoving = false
-			s.animationQueue.Load(s.selectPathToIdleFrame())
+			details.idleTimer = 0
+			details.idleRepeats = 0
+			details.wasMoving = false
+			details.animationQueue.Load(s.selectPathToIdleFrame(details))
 		}
 
 		if interacting {
 			// Poke animation
-			s.idleTimer = 0
-			s.idleRepeats = 0
-			s.animationQueue.Load(s.interactAtlases)
+			details.idleTimer = 0
+			details.idleRepeats = 0
+			details.animationQueue.Load(s.interactAtlases)
 		}
 
-		s.idleTimer += elapsedMs
-		if s.animationQueue.Empty() && s.idleTimer > timeUntilIdleAnimation*1000 {
-			if s.idleRepeats < idleAnimationRepeats {
-				s.idleRepeats++
-				s.animationQueue.Load(s.idleAtlas)
+		details.idleTimer += elapsedMs
+		if details.animationQueue.Empty() && details.idleTimer > timeUntilIdleAnimation*1000 {
+			if details.idleRepeats < idleAnimationRepeats {
+				details.idleRepeats++
+				details.animationQueue.Load(s.idleAtlas)
 			} else {
-				s.idleTimer = 0
-				s.idleRepeats = 0
+				details.idleTimer = 0
+				details.idleRepeats = 0
 			}
 		}
 
-		if s.animationQueue.Empty() {
-			s.lastAnimationFrame = s.walkAtlases[2]
+		if details.animationQueue.Empty() {
+			details.lastAnimationFrame = s.walkAtlases[2]
 		}
 
 		// Attempt to pop the next frame from the animation queue
-		if frame, ok := s.animationQueue.Texture(elapsedMs); ok {
-			s.lastAnimationFrame = frame
+		if frame, ok := details.animationQueue.Texture(elapsedMs); ok {
+			details.lastAnimationFrame = frame
 		}
 	}
 
-	return s.lastAnimationFrame
+	return details.lastAnimationFrame
 }
 
-func (s *playerRenderSystem) canWalk(speed float32) bool {
+func (s *scientistRenderSystem) canWalk(details *renderDetails, speed float32) bool {
 	// Continuing movement
-	if s.wasMoving && speed >= minContinueAnimationSpeed {
+	if details.wasMoving && speed >= minContinueAnimationSpeed {
 		return true
 	}
 
 	// Starting movement
-	if !s.wasMoving && speed >= minStartAnimationSpeed {
+	if !details.wasMoving && speed >= minStartAnimationSpeed {
 		// Do not animate if we're animating the transition to idle
-		return s.animationQueue.Empty()
+		return details.animationQueue.Empty()
 	}
 
 	// Velocity decaying toward zero
 	return false
 }
 
-func (s *playerRenderSystem) selectMovingTexture(speed float32, elapsedMs int64) rendering.Texture {
-	s.distanceTraveled += speed * float32(elapsedMs) / 1000.0
-	progress := int(s.distanceTraveled / frameInterval)
+func (s *scientistRenderSystem) selectMovingTexture(speed float32, details *renderDetails, elapsedMs int64) rendering.Texture {
+	details.distanceTraveled += speed * float32(elapsedMs) / 1000.0
+	progress := int(details.distanceTraveled / frameInterval)
 
 	if speed >= runThreshold {
 		return s.runAtlases[progress%len(s.runAtlases)]
@@ -245,8 +260,8 @@ func (s *playerRenderSystem) selectMovingTexture(speed float32, elapsedMs int64)
 	return s.walkAtlases[progress%len(s.walkAtlases)]
 }
 
-func (s *playerRenderSystem) selectPathToIdleFrame() (path []rendering.Texture) {
-	switch int(s.distanceTraveled/frameInterval) % len(s.walkAtlases) {
+func (s *scientistRenderSystem) selectPathToIdleFrame(details *renderDetails) (path []rendering.Texture) {
+	switch int(details.distanceTraveled/frameInterval) % len(s.walkAtlases) {
 	case 0:
 		// [0 ->] 1 -> 2
 		return s.walkAtlases[1:3]
