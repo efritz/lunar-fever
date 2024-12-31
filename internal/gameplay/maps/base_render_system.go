@@ -9,6 +9,7 @@ type baseRenderSystem struct {
 	*engine.Context
 	tileMap      *TileMap
 	baseRenderer *BaseRenderer
+	rooms        []Room
 }
 
 func NewBaseRenderSystem(engineCtx *engine.Context, tileMap *TileMap) system.System {
@@ -20,10 +21,12 @@ func NewBaseRenderSystem(engineCtx *engine.Context, tileMap *TileMap) system.Sys
 
 func (s *baseRenderSystem) Init() {
 	s.baseRenderer = NewBaseRenderer(s.SpriteBatch, s.TextureLoader, s.tileMap, false)
+	s.rooms = PartitionRooms(s.tileMap)
 }
 
 func (s *baseRenderSystem) Exit() {}
 
 func (s *baseRenderSystem) Process(elapsedMs int64) {
-	s.baseRenderer.Render(s.Camera.Bounds())
+	x1, y1, x2, y2 := s.Camera.Bounds()
+	s.baseRenderer.Render(x1, y1, x2, y2, s.rooms)
 }

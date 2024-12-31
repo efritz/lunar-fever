@@ -8,16 +8,18 @@ import (
 )
 
 type BaseRenderer struct {
-	spriteBatch *rendering.SpriteBatch
-	tileMap     *TileMap
-	textures    map[TileBitIndex]baseTexture
+	spriteBatch  *rendering.SpriteBatch
+	tileMap      *TileMap
+	textures     map[TileBitIndex]baseTexture
+	emptyTexture rendering.Texture
 }
 
 func NewBaseRenderer(spriteBatch *rendering.SpriteBatch, textureLoader *rendering.TextureLoader, tileMap *TileMap, renderDoors bool) *BaseRenderer {
 	return &BaseRenderer{
-		spriteBatch: spriteBatch,
-		tileMap:     tileMap,
-		textures:    newBaseTextureMap(textureLoader.Load("base"), renderDoors),
+		spriteBatch:  spriteBatch,
+		tileMap:      tileMap,
+		textures:     newBaseTextureMap(textureLoader.Load("base"), renderDoors),
+		emptyTexture: textureLoader.Load("base").Region(7*32, 1*32, 32, 32),
 	}
 }
 
@@ -134,7 +136,7 @@ func setTerminus(tileMap *TileMap, row, col int) {
 	tileMap.SetBit(row-1, col+1, TERMINUS_SW_BIT)
 }
 
-func (r *BaseRenderer) Render(x1, y1, x2, y2 float32) {
+func (r *BaseRenderer) Render(x1, y1, x2, y2 float32, rooms []Room) {
 	tileMap := setAestheticBits(r.tileMap) // TODO - cache
 
 	r.spriteBatch.Begin()
@@ -162,6 +164,17 @@ func (r *BaseRenderer) Render(x1, y1, x2, y2 float32) {
 					)
 				}
 			}
+		}
+	}
+
+	for _, room := range rooms {
+		for _, bound := range room.Bounds {
+			r.spriteBatch.Draw(
+				r.emptyTexture,
+				float32(bound.MinX)*64, float32(bound.MinY)*64, float32(bound.MaxX-bound.MinX+1)*64, float32(bound.MaxY-bound.MinY+1)*64,
+				rendering.WithOrigin(32, 32),
+				rendering.WithColor(bound.Color),
+			)
 		}
 	}
 
