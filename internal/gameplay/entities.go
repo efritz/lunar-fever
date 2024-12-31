@@ -30,6 +30,7 @@ func createScientist(ctx *GameContext) {
 	player := ctx.EntityManager.Create()
 	ctx.GroupManager.AddGroup(player, "scientist")
 	ctx.GroupManager.AddGroup(player, "physics")
+	ctx.GroupManager.AddGroup(player, "npc")
 
 	body := physics.NewBody("scientist", []physics.Fixture{
 		physics.NewBasicFixture(

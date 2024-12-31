@@ -51,6 +51,7 @@ func NewGameplay(engineCtx *engine.Context) view.View {
 	updateSystemManager.Add(NewDoorOpenerSystem(gameCtx), 0)
 	updateSystemManager.Add(NewInteractionSystem(gameCtx), 0)
 	updateSystemManager.Add(NewHealthSystem(gameCtx), 0)
+	updateSystemManager.Add(NewNpcMovementSystem(gameCtx), 0)
 	updateSystemManager.Add(gameCtx.CameraDirector, 0)
 
 	renderSystemManager := system.NewManager()
