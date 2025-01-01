@@ -28,7 +28,7 @@ type Bound struct {
 }
 
 type NavigationGraph struct {
-	Nodes []*NavigationNode
+	Nodes map[int]*NavigationNode
 	Edges []*NavigationEdge
 }
 
@@ -37,14 +37,15 @@ type NavigationNode struct {
 }
 
 type NavigationEdge struct {
-	From, To *NavigationNode
+	From int
+	To   int
 }
 
-func ConstructBase(tileMap *TileMap) Base {
+func ConstructBase(tileMap *TileMap) *Base {
 	rooms, doors := partitionRooms(tileMap)
 	navigationGraph := constructNavigationGraph(rooms, doors)
 
-	return Base{
+	return &Base{
 		Rooms:           rooms,
 		Doors:           doors,
 		NavigationGraph: navigationGraph,
@@ -115,9 +116,8 @@ func partitionRooms(tileMap *TileMap) ([]Room, []Door) {
 }
 
 func constructNavigationGraph(rooms []Room, doors []Door) *NavigationGraph {
-	var nodes []*NavigationNode
 	var edges []*NavigationEdge
-	nodeByBoundID := map[int]*NavigationNode{}
+	nodes := map[int]*NavigationNode{}
 
 	for _, room := range rooms {
 		for _, bound := range room.Bounds {
@@ -132,8 +132,7 @@ func constructNavigationGraph(rooms []Room, doors []Door) *NavigationGraph {
 				Y: center.Y,
 			}
 
-			nodes = append(nodes, node)
-			nodeByBoundID[bound.ID] = node
+			nodes[bound.ID] = node
 		}
 
 		for i, bound := range room.Bounds {
@@ -144,8 +143,8 @@ func constructNavigationGraph(rooms []Room, doors []Door) *NavigationGraph {
 
 				if boundsOverlap(bound, otherBound) {
 					edges = append(edges, &NavigationEdge{
-						From: nodeByBoundID[bound.ID],
-						To:   nodeByBoundID[otherBound.ID],
+						From: bound.ID,
+						To:   otherBound.ID,
 					})
 				}
 			}
@@ -164,14 +163,14 @@ func constructNavigationGraph(rooms []Room, doors []Door) *NavigationGraph {
 			Y: center.Y,
 		}
 
-		nodes = append(nodes, node)
+		nodes[door.Bound.ID] = node
 
 		for _, room := range rooms {
 			for _, bound := range room.Bounds {
 				if boundsOverlap(bound, door.Bound) {
 					edges = append(edges, &NavigationEdge{
-						From: nodeByBoundID[bound.ID],
-						To:   node,
+						From: bound.ID,
+						To:   door.Bound.ID,
 					})
 				}
 			}
@@ -466,11 +465,25 @@ func boundsOverlap(a, b Bound) bool {
 
 func segmentsOverlap(i, ii, j, jj math.Vector) bool {
 	if i.X == ii.X {
-		return j.X == jj.X && i.X == j.X && math.Min(i.Y, ii.Y) <= math.Max(j.Y, jj.Y) && math.Max(i.Y, ii.Y) >= math.Min(j.Y, jj.Y)
+		if j.X == jj.X && i.X == j.X {
+			minI := math.Min(i.Y, ii.Y)
+			maxI := math.Max(i.Y, ii.Y)
+			minJ := math.Min(j.Y, jj.Y)
+			maxJ := math.Max(j.Y, jj.Y)
+
+			return minI < maxJ && maxI > minJ
+		}
 	}
 
 	if i.Y == ii.Y {
-		return j.Y == jj.Y && i.Y == j.Y && math.Min(i.X, ii.X) <= math.Max(j.X, jj.X) && math.Max(i.X, ii.X) >= math.Min(j.X, jj.X)
+		if j.Y == jj.Y && i.Y == j.Y {
+			minI := math.Min(i.X, ii.X)
+			maxI := math.Max(i.X, ii.X)
+			minJ := math.Min(j.X, jj.X)
+			maxJ := math.Max(j.X, jj.X)
+
+			return minI < maxJ && maxI > minJ
+		}
 	}
 
 	return false

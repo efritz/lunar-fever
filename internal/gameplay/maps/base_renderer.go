@@ -225,8 +225,8 @@ func (r *BaseRenderer) Render(x1, y1, x2, y2 float32, rooms []Room, doors []Door
 		}
 
 		for _, edge := range navigationGraph.Edges {
-			from := math.Vector{edge.From.X - size/2, edge.From.Y - size/2}
-			to := math.Vector{edge.To.X - size/2, edge.To.Y - size/2}
+			from := math.Vector{navigationGraph.Nodes[edge.From].X - size/2, navigationGraph.Nodes[edge.From].Y - size/2}
+			to := math.Vector{navigationGraph.Nodes[edge.To].X - size/2, navigationGraph.Nodes[edge.To].Y - size/2}
 
 			edge := to.Sub(from)
 			angle := math.Atan232(edge.Y, edge.X)

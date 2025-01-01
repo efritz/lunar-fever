@@ -9,10 +9,10 @@ type baseRenderSystem struct {
 	*engine.Context
 	tileMap      *TileMap
 	baseRenderer *BaseRenderer
-	base         Base
+	base         *Base
 }
 
-func NewBaseRenderSystem(engineCtx *engine.Context, tileMap *TileMap, base Base) system.System {
+func NewBaseRenderSystem(engineCtx *engine.Context, tileMap *TileMap, base *Base) system.System {
 	return &baseRenderSystem{
 		Context: engineCtx,
 		tileMap: tileMap,

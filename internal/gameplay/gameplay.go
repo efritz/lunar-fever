@@ -41,7 +41,7 @@ func NewGameplay(engineCtx *engine.Context) view.View {
 	}
 	base := maps.ConstructBase(tileMap)
 
-	gameCtx := NewGameContext(engineCtx, tileMap)
+	gameCtx := NewGameContext(engineCtx, tileMap, base)
 
 	updateSystemManager := system.NewManager()
 	updateSystemManager.Add(physics.NewPhysicsComponentSystem(gameCtx.EventManager, gameCtx.ComponentManager), 0)

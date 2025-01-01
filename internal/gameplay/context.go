@@ -15,6 +15,7 @@ type GameContext struct {
 	*engine.Context
 
 	TileMap        *maps.TileMap
+	Base           *maps.Base
 	CameraDirector *CameraDirector
 
 	EventManager     *event.Manager
@@ -35,7 +36,7 @@ type GameContext struct {
 	PhysicsCollection   *entity.Collection
 }
 
-func NewGameContext(engineCtx *engine.Context, tileMap *maps.TileMap) *GameContext {
+func NewGameContext(engineCtx *engine.Context, tileMap *maps.TileMap, base *maps.Base) *GameContext {
 	eventManager := event.NewManager()
 	entityManager := entity.NewManager(eventManager)
 	componentManager := component.NewManager(eventManager)
@@ -45,6 +46,7 @@ func NewGameContext(engineCtx *engine.Context, tileMap *maps.TileMap) *GameConte
 	return &GameContext{
 		Context:        engineCtx,
 		TileMap:        tileMap,
+		Base:           base,
 		CameraDirector: &CameraDirector{Context: engineCtx},
 
 		EventManager:     eventManager,
