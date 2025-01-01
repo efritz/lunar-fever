@@ -137,7 +137,7 @@ func (e *Editor) Render(elapsedMs int64) {
 	// 	g.drawLine(j, 0, j, getHeight());
 	// }
 
-	e.baseRenderer.Render(0, 0, rendering.DisplayWidth, rendering.DisplayHeight, nil)
+	e.baseRenderer.Render(0, 0, rendering.DisplayWidth, rendering.DisplayHeight, nil, nil, nil)
 
 	var color rendering.Color
 	if e.performingAction {

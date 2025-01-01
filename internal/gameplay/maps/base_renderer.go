@@ -136,7 +136,7 @@ func setTerminus(tileMap *TileMap, row, col int) {
 	tileMap.SetBit(row-1, col+1, TERMINUS_SW_BIT)
 }
 
-func (r *BaseRenderer) Render(x1, y1, x2, y2 float32, rooms []Room) {
+func (r *BaseRenderer) Render(x1, y1, x2, y2 float32, rooms []Room, doors []Door, navigationGraph *NavigationGraph) {
 	tileMap := setAestheticBits(r.tileMap) // TODO - cache
 
 	r.spriteBatch.Begin()
@@ -167,13 +167,76 @@ func (r *BaseRenderer) Render(x1, y1, x2, y2 float32, rooms []Room) {
 		}
 	}
 
-	for _, room := range rooms {
-		for _, bound := range room.Bounds {
+	if navigationGraph != nil {
+		size := float32(5)
+
+		for _, room := range rooms {
+			for _, bound := range room.Bounds {
+				minX := bound.Vertices[0].X
+				maxX := bound.Vertices[0].X
+				minY := bound.Vertices[0].Y
+				maxY := bound.Vertices[0].Y
+				for _, vertex := range bound.Vertices {
+					minX = math.Min(minX, vertex.X)
+					maxX = math.Max(maxX, vertex.X)
+					minY = math.Min(minY, vertex.Y)
+					maxY = math.Max(maxY, vertex.Y)
+				}
+
+				r.spriteBatch.Draw(
+					r.emptyTexture,
+					minX, minY, maxX-minX, maxY-minY,
+					rendering.WithOrigin(size/2, size/2),
+					rendering.WithColor(bound.Color),
+				)
+			}
+		}
+
+		for _, door := range doors {
+			for i, vertex := range door.Bound.Vertices {
+				r.spriteBatch.Draw(
+					r.emptyTexture,
+					vertex.X-size/2, vertex.Y-size/2, size, size,
+					rendering.WithOrigin(size/2, size/2),
+					rendering.WithColor(door.Bound.Color),
+				)
+
+				to := door.Bound.Vertices[(i+1)%len(door.Bound.Vertices)]
+				edge := to.Sub(vertex)
+				angle := math.Atan232(edge.Y, edge.X)
+
+				r.spriteBatch.Draw(
+					r.emptyTexture,
+					vertex.X, vertex.Y, edge.Len(), 1,
+					rendering.WithRotation(angle),
+					rendering.WithOrigin(0, 1),
+					rendering.WithColor(door.Bound.Color),
+				)
+			}
+		}
+
+		for _, node := range navigationGraph.Nodes {
 			r.spriteBatch.Draw(
 				r.emptyTexture,
-				float32(bound.MinX)*64, float32(bound.MinY)*64, float32(bound.MaxX-bound.MinX+1)*64, float32(bound.MaxY-bound.MinY+1)*64,
-				rendering.WithOrigin(32, 32),
-				rendering.WithColor(bound.Color),
+				node.X-size/2, node.Y-size/2, size, size,
+				rendering.WithOrigin(size/2, size/2),
+				rendering.WithColor(rendering.Color{1, 0, 0, 1}),
+			)
+		}
+
+		for _, edge := range navigationGraph.Edges {
+			from := math.Vector{edge.From.X - size/2, edge.From.Y - size/2}
+			to := math.Vector{edge.To.X - size/2, edge.To.Y - size/2}
+
+			edge := to.Sub(from)
+			angle := math.Atan232(edge.Y, edge.X)
+
+			r.spriteBatch.Draw(
+				r.emptyTexture,
+				from.X+size/2, from.Y+size/2, edge.Len(), 1,
+				rendering.WithRotation(angle),
+				rendering.WithOrigin(0, 1),
+				rendering.WithColor(rendering.Color{1, 0, 0, 1}),
 			)
 		}
 	}
