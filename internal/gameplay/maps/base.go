@@ -5,9 +5,10 @@ import (
 	"github.com/efritz/lunar-fever/internal/engine/rendering"
 )
 
-type Point struct {
-	Row int
-	Col int
+type Base struct {
+	Rooms           []Room
+	Doors           []Door
+	NavigationGraph *NavigationGraph
 }
 
 type Room struct {
@@ -17,6 +18,8 @@ type Room struct {
 type Door struct {
 	Bound Bound
 }
+
+var boundID = 0
 
 type Bound struct {
 	ID       int
@@ -37,7 +40,81 @@ type NavigationEdge struct {
 	From, To *NavigationNode
 }
 
-func ConstructNavigationGraph(rooms []Room, doors []Door) *NavigationGraph {
+func ConstructBase(tileMap *TileMap) Base {
+	rooms, doors := partitionRooms(tileMap)
+	navigationGraph := constructNavigationGraph(rooms, doors)
+
+	return Base{
+		Rooms:           rooms,
+		Doors:           doors,
+		NavigationGraph: navigationGraph,
+	}
+}
+
+//
+//
+//
+
+func partitionRooms(tileMap *TileMap) ([]Room, []Door) {
+	var rooms []Room
+	var doors []Door
+	visited := map[int]any{}
+
+	for col := 0; col < tileMap.Width(); col++ {
+		for row := 0; row < tileMap.Height(); row++ {
+			if _, ok := visited[mapIndex(tileMap, row, col)]; ok {
+				continue
+			}
+			if !tileMap.GetBit(row, col, FLOOR_BIT) {
+				continue
+			}
+
+			board := tiles(tileMap, row, col, visited)
+			bounds := buildBounds(board)
+			for row, cols := range board {
+				for col := range cols {
+					if tileMap.GetBit(row, col, DOOR_N_BIT) {
+						boundID++
+						doors = append(doors, Door{
+							Bound: Bound{
+								ID: boundID,
+								Vertices: []math.Vector{
+									{X: float32(col) * 64, Y: float32(row) * 64},
+									{X: float32(col+1) * 64, Y: float32(row) * 64},
+								},
+								Color: randomColor(),
+							},
+						})
+					}
+
+					if tileMap.GetBit(row, col, DOOR_E_BIT) {
+						boundID++
+						doors = append(doors, Door{
+							Bound{
+								ID: boundID,
+								Vertices: []math.Vector{
+									{X: float32(col+1) * 64, Y: float32(row) * 64},
+									{X: float32(col+1) * 64, Y: float32(row+1) * 64},
+								},
+								Color: randomColor(),
+							},
+						})
+					}
+				}
+			}
+
+			room := Room{
+				Bounds: bounds,
+			}
+
+			rooms = append(rooms, room)
+		}
+	}
+
+	return rooms, doors
+}
+
+func constructNavigationGraph(rooms []Room, doors []Door) *NavigationGraph {
 	var nodes []*NavigationNode
 	var edges []*NavigationEdge
 	nodeByBoundID := map[int]*NavigationNode{}
@@ -107,97 +184,13 @@ func ConstructNavigationGraph(rooms []Room, doors []Door) *NavigationGraph {
 	}
 }
 
-func boundsOverlap(a, b Bound) bool {
-	for i := 0; i < len(a.Vertices); i++ {
-		ii := (i + 1) % len(a.Vertices)
+//
+//
+//
 
-		for j := 0; j < len(b.Vertices); j++ {
-			jj := (j + 1) % len(b.Vertices)
-
-			if segmentsOverlap(a.Vertices[i], a.Vertices[ii], b.Vertices[j], b.Vertices[jj]) {
-				return true
-			}
-		}
-	}
-
-	return false
-}
-
-func segmentsOverlap(i, ii, j, jj math.Vector) bool {
-	if i.X == ii.X {
-		return j.X == jj.X && i.X == j.X && math.Min(i.Y, ii.Y) <= math.Max(j.Y, jj.Y) && math.Max(i.Y, ii.Y) >= math.Min(j.Y, jj.Y)
-	}
-
-	if i.Y == ii.Y {
-		return j.Y == jj.Y && i.Y == j.Y && math.Min(i.X, ii.X) <= math.Max(j.X, jj.X) && math.Max(i.X, ii.X) >= math.Min(j.X, jj.X)
-	}
-
-	return false
-}
-
-var boundID = 0
-
-func PartitionRooms(tileMap *TileMap) ([]Room, []Door) {
-	var rooms []Room
-	var doors []Door
-	visited := map[int]any{}
-
-	for col := 0; col < tileMap.Width(); col++ {
-		for row := 0; row < tileMap.Height(); row++ {
-			if _, ok := visited[mapIndex(tileMap, row, col)]; ok {
-				continue
-			}
-			if !tileMap.GetBit(row, col, FLOOR_BIT) {
-				continue
-			}
-
-			board := tiles(tileMap, row, col, visited)
-			bounds := buildBounds(board)
-			for row, cols := range board {
-				for col := range cols {
-					if tileMap.GetBit(row, col, DOOR_N_BIT) {
-						boundID++
-						doors = append(doors, Door{
-							Bound: Bound{
-								ID: boundID,
-								Vertices: []math.Vector{
-									{X: float32(col) * 64, Y: float32(row) * 64},
-									{X: float32(col+1) * 64, Y: float32(row) * 64},
-								},
-								Color: randomColor(),
-							},
-						})
-					}
-
-					if tileMap.GetBit(row, col, DOOR_E_BIT) {
-						boundID++
-						doors = append(doors, Door{
-							Bound{
-								ID: boundID,
-								Vertices: []math.Vector{
-									{X: float32(col+1) * 64, Y: float32(row) * 64},
-									{X: float32(col+1) * 64, Y: float32(row+1) * 64},
-								},
-								Color: randomColor(),
-							},
-						})
-					}
-				}
-			}
-
-			room := Room{
-				Bounds: bounds,
-			}
-
-			rooms = append(rooms, room)
-		}
-	}
-
-	return rooms, doors
-}
-
-func buildBounds(board [][]bool) []Bound {
-	return GreedyCoverAllDirections(board)
+type Point struct {
+	Row int
+	Col int
 }
 
 type PointWithForbiddenBits struct {
@@ -254,31 +247,17 @@ func mapIndex(tileMap *TileMap, row, col int) int {
 	return col*tileMap.Width() + row
 }
 
-func randomColor() rendering.Color {
-	return rendering.Color{
-		R: math.Random(0, 1),
-		G: math.Random(0, 1),
-		B: math.Random(0, 1),
-		A: 0.25,
-	}
-}
-
 //
 //
 //
 
-// rect is a helper struct for internal representation in grid coords: (topRow, leftCol, bottomRow, rightCol).
 type rect struct {
 	top, left, bottom, right int
 }
 
-//
-//
-//
-
-// GreedyCoverAllDirections repeatedly finds the single largest rectangle of `true`
+// buildBounds repeatedly finds the single largest rectangle of `true`
 // cells in the entire board, removes it, and continues until the board is empty.
-func GreedyCoverAllDirections(board [][]bool) []Bound {
+func buildBounds(board [][]bool) []Bound {
 	var result []Bound
 	rows := len(board)
 	if rows == 0 {
@@ -437,7 +416,6 @@ func largestRectInHistogram(heights []int) (maxArea int, lefts, rights []int) {
 	return maxArea, lefts, rights
 }
 
-// eraseRectangle sets all cells in the rectangle [top..bottom, left..right] to false.
 func eraseRectangle(board [][]bool, r rect) {
 	for row := r.top; row <= r.bottom; row++ {
 		for col := r.left; col <= r.right; col++ {
@@ -446,8 +424,6 @@ func eraseRectangle(board [][]bool, r rect) {
 	}
 }
 
-// rectToBound converts the grid rectangle to a Bound with 4 corners
-// in pixel coords (assuming each cell = 64×64).
 func rectToBound(r rect) Bound {
 	topY := float32(r.top) * 64
 	botY := float32(r.bottom+1) * 64
@@ -459,11 +435,52 @@ func rectToBound(r rect) Bound {
 	return Bound{
 		ID: boundID,
 		Vertices: []math.Vector{
-			{X: leftX, Y: topY},  // top-left
-			{X: rightX, Y: topY}, // top-right
-			{X: rightX, Y: botY}, // bottom-right
-			{X: leftX, Y: botY},  // bottom-left
+			{X: leftX, Y: topY},
+			{X: rightX, Y: topY},
+			{X: rightX, Y: botY},
+			{X: leftX, Y: botY},
 		},
-		Color: randomColor(), // your color function
+		Color: randomColor(),
+	}
+}
+
+//
+//
+//
+
+func boundsOverlap(a, b Bound) bool {
+	for i := 0; i < len(a.Vertices); i++ {
+		ii := (i + 1) % len(a.Vertices)
+
+		for j := 0; j < len(b.Vertices); j++ {
+			jj := (j + 1) % len(b.Vertices)
+
+			if segmentsOverlap(a.Vertices[i], a.Vertices[ii], b.Vertices[j], b.Vertices[jj]) {
+				return true
+			}
+		}
+	}
+
+	return false
+}
+
+func segmentsOverlap(i, ii, j, jj math.Vector) bool {
+	if i.X == ii.X {
+		return j.X == jj.X && i.X == j.X && math.Min(i.Y, ii.Y) <= math.Max(j.Y, jj.Y) && math.Max(i.Y, ii.Y) >= math.Min(j.Y, jj.Y)
+	}
+
+	if i.Y == ii.Y {
+		return j.Y == jj.Y && i.Y == j.Y && math.Min(i.X, ii.X) <= math.Max(j.X, jj.X) && math.Max(i.X, ii.X) >= math.Min(j.X, jj.X)
+	}
+
+	return false
+}
+
+func randomColor() rendering.Color {
+	return rendering.Color{
+		R: math.Random(0, 1),
+		G: math.Random(0, 1),
+		B: math.Random(0, 1),
+		A: 0.25,
 	}
 }

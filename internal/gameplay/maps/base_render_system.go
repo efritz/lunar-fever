@@ -7,29 +7,26 @@ import (
 
 type baseRenderSystem struct {
 	*engine.Context
-	tileMap         *TileMap
-	baseRenderer    *BaseRenderer
-	rooms           []Room
-	doors           []Door
-	navigationGraph *NavigationGraph
+	tileMap      *TileMap
+	baseRenderer *BaseRenderer
+	base         Base
 }
 
-func NewBaseRenderSystem(engineCtx *engine.Context, tileMap *TileMap) system.System {
+func NewBaseRenderSystem(engineCtx *engine.Context, tileMap *TileMap, base Base) system.System {
 	return &baseRenderSystem{
 		Context: engineCtx,
 		tileMap: tileMap,
+		base:    base,
 	}
 }
 
 func (s *baseRenderSystem) Init() {
 	s.baseRenderer = NewBaseRenderer(s.SpriteBatch, s.TextureLoader, s.tileMap, false)
-	s.rooms, s.doors = PartitionRooms(s.tileMap)
-	s.navigationGraph = ConstructNavigationGraph(s.rooms, s.doors)
 }
 
 func (s *baseRenderSystem) Exit() {}
 
 func (s *baseRenderSystem) Process(elapsedMs int64) {
 	x1, y1, x2, y2 := s.Camera.Bounds()
-	s.baseRenderer.Render(x1, y1, x2, y2, s.rooms, s.doors, s.navigationGraph)
+	s.baseRenderer.Render(x1, y1, x2, y2, s.base.Rooms, s.base.Doors, s.base.NavigationGraph)
 }

@@ -39,6 +39,7 @@ func NewGameplay(engineCtx *engine.Context) view.View {
 
 		tileMap = maps.NewTileMap(100, 100, 64)
 	}
+	base := maps.ConstructBase(tileMap)
 
 	gameCtx := NewGameContext(engineCtx, tileMap)
 
@@ -56,7 +57,7 @@ func NewGameplay(engineCtx *engine.Context) view.View {
 
 	renderSystemManager := system.NewManager()
 	renderSystemManager.Add(NewRegolithRenderSystem(gameCtx), 0)
-	renderSystemManager.Add(maps.NewBaseRenderSystem(engineCtx, tileMap), 1)
+	renderSystemManager.Add(maps.NewBaseRenderSystem(engineCtx, tileMap, base), 1)
 	renderSystemManager.Add(NewScientistRenderSystem(gameCtx), 2)
 	renderSystemManager.Add(NewRoverRenderSystem(gameCtx), 2)
 	renderSystemManager.Add(NewPhysicsRenderSystem(gameCtx), 3)
