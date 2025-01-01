@@ -2,7 +2,6 @@ package gameplay
 
 import (
 	"github.com/efritz/lunar-fever/internal/engine/ecs/system"
-	"github.com/efritz/lunar-fever/internal/engine/physics"
 )
 
 type doorOpenerSystem struct {
@@ -17,15 +16,6 @@ func (s *doorOpenerSystem) Init() {}
 func (s *doorOpenerSystem) Exit() {}
 
 func (s *doorOpenerSystem) Process(elapsedMs int64) {
-	var playerPhysicsComponent *physics.PhysicsComponent
-	for _, entity := range s.PlayerCollection.Entities() {
-		component, ok := s.PhysicsComponentManager.GetComponent(entity)
-		if !ok {
-			return
-		}
-
-		playerPhysicsComponent = component
-	}
 
 	for _, entity := range s.DoorCollection.Entities() {
 		component, ok := s.PhysicsComponentManager.GetComponent(entity)
@@ -33,6 +23,19 @@ func (s *doorOpenerSystem) Process(elapsedMs int64) {
 			return
 		}
 
-		component.CollisionsDisabled = component.Body.Position.Sub(playerPhysicsComponent.Body.Position).Len() < 50
+		collisionsDisabled := false
+		for _, entity := range s.ScientistCollection.Entities() {
+			scientistPhysicsComponent, ok := s.PhysicsComponentManager.GetComponent(entity)
+			if !ok {
+				return
+			}
+
+			if component.Body.Position.Sub(scientistPhysicsComponent.Body.Position).Len() < 50 {
+				collisionsDisabled = true
+				break
+			}
+		}
+
+		component.CollisionsDisabled = collisionsDisabled
 	}
 }
