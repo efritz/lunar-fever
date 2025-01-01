@@ -41,6 +41,7 @@ func createScientist(ctx *GameContext) {
 	})
 	body.Position = math.Vector{rendering.DisplayWidth - 100, 300}
 	ctx.PhysicsComponentManager.AddComponent(player, &physics.PhysicsComponent{Body: body})
+	ctx.PathfindingComponentManager.AddComponent(player, &PathfindingComponent{})
 	ctx.HealthComponentManager.AddComponent(player, &HealthComponent{Health: 100, MaxHealth: 100})
 }
 

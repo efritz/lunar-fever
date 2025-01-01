@@ -63,6 +63,7 @@ func NewGameplay(engineCtx *engine.Context) view.View {
 	renderSystemManager.Add(NewPhysicsRenderSystem(gameCtx), 3)
 	renderSystemManager.Add(NewDoorRenderSystem(gameCtx), 4)
 	renderSystemManager.Add(NewInteractionRenderSystem(gameCtx), 5)
+	renderSystemManager.Add(NewNpcMovementRenderSystem(gameCtx), 6)
 
 	createPlayer(gameCtx)
 	createScientist(gameCtx)

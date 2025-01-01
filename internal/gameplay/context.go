@@ -25,6 +25,7 @@ type GameContext struct {
 	GroupManager     *group.Manager
 
 	PhysicsComponentManager     *component.TypedManager[*physics.PhysicsComponent, physics.PhysicsComponentType]
+	PathfindingComponentManager *component.TypedManager[*PathfindingComponent, PathfindingComponentType]
 	HealthComponentManager      *component.TypedManager[*HealthComponent, HealthComponentType]
 	InteractionComponentManager *component.TypedManager[*InteractionComponent, InteractionComponentType]
 
@@ -56,6 +57,7 @@ func NewGameContext(engineCtx *engine.Context, tileMap *maps.TileMap, base *maps
 		GroupManager:     groupManager,
 
 		PhysicsComponentManager:     component.NewTypedManager[*physics.PhysicsComponent](componentManager, eventManager),
+		PathfindingComponentManager: component.NewTypedManager[*PathfindingComponent](componentManager, eventManager),
 		HealthComponentManager:      component.NewTypedManager[*HealthComponent](componentManager, eventManager),
 		InteractionComponentManager: component.NewTypedManager[*InteractionComponent](componentManager, eventManager),
 
