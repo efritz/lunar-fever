@@ -136,7 +136,7 @@ func setTerminus(tileMap *TileMap, row, col int) {
 	tileMap.SetBit(row-1, col+1, TERMINUS_SW_BIT)
 }
 
-func (r *BaseRenderer) Render(x1, y1, x2, y2 float32, rooms []Room, doors []Door, navigationGraph *NavigationGraph) {
+func (r *BaseRenderer) Render(x1, y1, x2, y2 float32, rooms []Room, doors []Door, navigationGraph *NavigationGraph, debugging bool) {
 	tileMap := setAestheticBits(r.tileMap) // TODO - cache
 
 	r.spriteBatch.Begin()
@@ -167,53 +167,66 @@ func (r *BaseRenderer) Render(x1, y1, x2, y2 float32, rooms []Room, doors []Door
 		}
 	}
 
-	if navigationGraph != nil {
-		size := float32(5)
+	if navigationGraph != nil && debugging {
+		size := float32(10)
+		lineSize := float32(2)
 
 		for _, room := range rooms {
 			for _, bound := range room.Bounds {
-				minX := bound.Vertices[0].X
-				maxX := bound.Vertices[0].X
-				minY := bound.Vertices[0].Y
-				maxY := bound.Vertices[0].Y
-				for _, vertex := range bound.Vertices {
-					minX = math.Min(minX, vertex.X)
-					maxX = math.Max(maxX, vertex.X)
-					minY = math.Min(minY, vertex.Y)
-					maxY = math.Max(maxY, vertex.Y)
+				c := room.Color
+				c.A = 1
+				for i, vertex := range bound.Vertices {
+					r.spriteBatch.Draw(
+						r.emptyTexture,
+						vertex.X-size/2, vertex.Y-size/2, size, size,
+						rendering.WithOrigin(size/2, size/2),
+						rendering.WithColor(c),
+					)
+
+					to := bound.Vertices[(i+1)%len(bound.Vertices)]
+					edge := to.Sub(vertex)
+					angle := math.Atan232(edge.Y, edge.X)
+
+					r.spriteBatch.Draw(
+						r.emptyTexture,
+						vertex.X, vertex.Y, edge.Len(), lineSize,
+						rendering.WithRotation(angle),
+						rendering.WithOrigin(0, 1),
+						rendering.WithColor(c),
+					)
 				}
-
-				r.spriteBatch.Draw(
-					r.emptyTexture,
-					minX, minY, maxX-minX, maxY-minY,
-					rendering.WithOrigin(size/2, size/2),
-					rendering.WithColor(bound.Color),
-				)
 			}
 		}
 
-		for _, door := range doors {
-			for i, vertex := range door.Bound.Vertices {
-				r.spriteBatch.Draw(
-					r.emptyTexture,
-					vertex.X-size/2, vertex.Y-size/2, size, size,
-					rendering.WithOrigin(size/2, size/2),
-					rendering.WithColor(door.Bound.Color),
-				)
+		// for _, door := range doors {
+		// 	c := door.Bound.Color
 
-				to := door.Bound.Vertices[(i+1)%len(door.Bound.Vertices)]
-				edge := to.Sub(vertex)
-				angle := math.Atan232(edge.Y, edge.X)
+		// 	for i, vertex := range door.Bound.Vertices {
+		// 		r.spriteBatch.Draw(
+		// 			r.emptyTexture,
+		// 			vertex.X-size/2, vertex.Y-size/2, size, size,
+		// 			rendering.WithOrigin(size/2, size/2),
+		// 			rendering.WithColor(c),
+		// 		)
 
-				r.spriteBatch.Draw(
-					r.emptyTexture,
-					vertex.X, vertex.Y, edge.Len(), 1,
-					rendering.WithRotation(angle),
-					rendering.WithOrigin(0, 1),
-					rendering.WithColor(door.Bound.Color),
-				)
-			}
-		}
+		// 		to := door.Bound.Vertices[(i+1)%len(door.Bound.Vertices)]
+		// 		edge := to.Sub(vertex)
+		// 		angle := math.Atan232(edge.Y, edge.X)
+
+		// 		r.spriteBatch.Draw(
+		// 			r.emptyTexture,
+		// 			vertex.X, vertex.Y, edge.Len(), 5,
+		// 			rendering.WithRotation(angle),
+		// 			rendering.WithOrigin(0, 1),
+		// 			rendering.WithColor(c),
+		// 		)
+		// 	}
+		// }
+
+		//
+		//
+
+		// TODO
 
 		for _, node := range navigationGraph.Nodes {
 			r.spriteBatch.Draw(

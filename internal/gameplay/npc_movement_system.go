@@ -76,7 +76,7 @@ func (s *npcMovementSystem) Process(elapsedMs int64) {
 					pathfindingComponent.Target[0].Sub(physicsComponent.Body.Position).Normalize().Muls(speed * float32(elapsedMs) / mod * transitionSpeed),
 				)
 
-			if pathfindingComponent.Target[0].Sub(physicsComponent.Body.Position).Len() < 2 {
+			if pathfindingComponent.Target[0].Sub(physicsComponent.Body.Position).Len() < 20 {
 				pathfindingComponent.Target = pathfindingComponent.Target[1:]
 			}
 		} else {

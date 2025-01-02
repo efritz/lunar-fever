@@ -5,6 +5,10 @@ type Vector struct {
 	Y float32
 }
 
+func (v Vector) Equal(o Vector) bool {
+	return v.X == o.X && v.Y == o.Y
+}
+
 func (v Vector) Len() float32          { return Sqrt32(v.X*v.X + v.Y*v.Y) }
 func (v Vector) Neg() Vector           { return Vector{-v.X, -v.Y} }
 func (v Vector) Orthogonalize() Vector { return Vector{+v.Y, -v.X} }
