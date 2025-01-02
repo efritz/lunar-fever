@@ -34,5 +34,5 @@ func (s *baseRenderSystem) Process(elapsedMs int64) {
 	}
 
 	x1, y1, x2, y2 := s.Camera.Bounds()
-	s.baseRenderer.Render(x1, y1, x2, y2, s.base.Rooms, s.base.Doors, s.base.NavigationGraph, s.debugging)
+	s.baseRenderer.Render(x1, y1, x2, y2, s.base.Rooms, s.base.NavigationGraph, s.debugging)
 }

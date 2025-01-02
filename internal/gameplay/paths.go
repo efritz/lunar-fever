@@ -21,118 +21,81 @@ func (c *PathfindingComponent) ComponentType() PathfindingComponentType {
 //
 //
 
-func contains(bounds maps.Bound, point math.Vector) bool {
-	vertices := bounds.Vertices
-	n := len(vertices)
-	if n < 3 {
-		return false
-	}
-
-	inside := false
-	for i, j := 0, n-1; i < n; i, j = i+1, i {
-		if (vertices[i].Y > point.Y) != (vertices[j].Y > point.Y) &&
-			point.X < (vertices[j].X-vertices[i].X)*(point.Y-vertices[i].Y)/(vertices[j].Y-vertices[i].Y)+vertices[i].X {
-			inside = !inside
-		}
-	}
-
-	return inside
-}
-
-type NodeInfo struct {
+type nodeInfo struct {
 	id     int
+	parent int     // Parent node in the path
 	g      float32 // Cost from start to this node
 	h      float32 // Heuristic estimate to goal
-	f      float32 // f = g + h
-	parent int     // Parent node in the path
 }
 
-func search(navigationGraph *maps.NavigationGraph, from, to int) []int {
-	openSet := make(map[int]*NodeInfo)
-	closedSet := make(map[int]bool)
-	allNodes := make(map[int]*NodeInfo)
+const travelCost = 1
 
-	// Initialize start node with g=0 and h=1 (just counting nodes)
-	startNode := &NodeInfo{
-		id:     from,
-		g:      0,
-		h:      1, // One step away is cost of 1
-		parent: -1,
+func search(navigationGraph *maps.NavigationGraph, from, to int) []int {
+	edges := map[int][]int{}
+	for _, edge := range navigationGraph.Edges {
+		edges[edge.From] = append(edges[edge.From], edge.To)
+		edges[edge.To] = append(edges[edge.To], edge.From)
 	}
-	startNode.f = startNode.g + startNode.h
+
+	openSet := map[int]*nodeInfo{}
+	closedSet := map[int]any{}
+	allNodes := map[int]*nodeInfo{}
+
+	// Initialize open set with start node
+	startNode := &nodeInfo{id: from, parent: -1, g: 0, h: travelCost}
 	openSet[from] = startNode
 	allNodes[from] = startNode
 
 	for len(openSet) > 0 {
-		// Find node with lowest f score in open set
-		var current *NodeInfo
-		var currentId int
+		// Find lowest cost node in open set
+		var current *nodeInfo
+		var currentID int
 		for id, node := range openSet {
-			if current == nil || node.f < current.f {
+			if current == nil || node.g+node.h < current.g+current.h {
 				current = node
-				currentId = id
+				currentID = id
 			}
 		}
 
-		// If we reached the goal, reconstruct and return the path
-		if currentId == to {
+		if currentID == to {
+			// Found goal, reconstruct path
 			return reconstructPath(current, allNodes)
 		}
 
-		// Move current node from open to closed set
-		delete(openSet, currentId)
-		closedSet[currentId] = true
+		// Move from open set to closed set
+		delete(openSet, currentID)
+		closedSet[currentID] = struct{}{}
 
-		// Check all neighbors through edges
-		for _, edge := range navigationGraph.Edges {
-			var neighborId int
-
-			if edge.From == currentId {
-				neighborId = edge.To
-			} else if edge.To == currentId {
-				neighborId = edge.From
-			} else {
+		// Expand neighbors
+		for _, neighborID := range edges[currentID] {
+			if _, ok := closedSet[neighborID]; ok {
 				continue
 			}
 
-			if closedSet[neighborId] {
-				continue
-			}
+			tentativeG := current.g + travelCost
 
-			// Cost to reach neighbor is current cost plus 1
-			tentativeG := current.g + 1
-
-			neighbor, exists := openSet[neighborId]
+			neighbor, exists := openSet[neighborID]
 			if !exists {
-				// New node discovered
-				neighbor = &NodeInfo{
-					id:     neighborId,
-					g:      tentativeG,
-					h:      1, // Always 1 step cost estimate
-					parent: currentId,
-				}
-				neighbor.f = neighbor.g + neighbor.h
-				openSet[neighborId] = neighbor
-				allNodes[neighborId] = neighbor
+				// Discovered neighbor for first time
+				neighbor = &nodeInfo{id: neighborID, parent: currentID, g: tentativeG, h: travelCost}
+				openSet[neighborID] = neighbor
+				allNodes[neighborID] = neighbor
 			} else if tentativeG < neighbor.g {
-				// Found a better path to neighbor
+				// Discovered better path for existing neighbor
 				neighbor.g = tentativeG
-				neighbor.f = tentativeG + neighbor.h
-				neighbor.parent = currentId
+				neighbor.parent = currentID
 			}
 		}
 	}
 
+	// No path exists
 	return nil
 }
 
-func reconstructPath(goal *NodeInfo, nodes map[int]*NodeInfo) []int {
+func reconstructPath(goal *nodeInfo, nodes map[int]*nodeInfo) []int {
 	path := []int{goal.id}
-	current := goal
-
-	for current.parent != -1 {
+	for current := goal; current.parent != -1; current = nodes[current.parent] {
 		path = append([]int{current.parent}, path...)
-		current = nodes[current.parent]
 	}
 
 	return path

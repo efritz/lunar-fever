@@ -52,7 +52,7 @@ func (s *npcMovementSystem) Process(elapsedMs int64) {
 
 			pathfindingComponent.Target = nil
 			for _, id := range search(s.Base.NavigationGraph, from.ID, to.ID) {
-				pathfindingComponent.Target = append(pathfindingComponent.Target, math.Vector{s.Base.NavigationGraph.Nodes[id].X, s.Base.NavigationGraph.Nodes[id].Y})
+				pathfindingComponent.Target = append(pathfindingComponent.Target, math.Vector{s.Base.NavigationGraph.Nodes[id].Center.X, s.Base.NavigationGraph.Nodes[id].Center.Y})
 			}
 		}
 
@@ -83,4 +83,12 @@ func (s *npcMovementSystem) Process(elapsedMs int64) {
 			physicsComponent.Body.LinearVelocity = math.Vector{0, 0}
 		}
 	}
+}
+
+func contains(bounds maps.Bound, point math.Vector) bool {
+	if len(bounds.Vertices) != 3 {
+		return false
+	}
+
+	return maps.PointInTriangle(bounds.Vertices[0], bounds.Vertices[1], bounds.Vertices[2], point)
 }

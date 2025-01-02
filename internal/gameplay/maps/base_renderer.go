@@ -136,7 +136,7 @@ func setTerminus(tileMap *TileMap, row, col int) {
 	tileMap.SetBit(row-1, col+1, TERMINUS_SW_BIT)
 }
 
-func (r *BaseRenderer) Render(x1, y1, x2, y2 float32, rooms []Room, doors []Door, navigationGraph *NavigationGraph, debugging bool) {
+func (r *BaseRenderer) Render(x1, y1, x2, y2 float32, rooms []Room, navigationGraph *NavigationGraph, debugging bool) {
 	tileMap := setAestheticBits(r.tileMap) // TODO - cache
 
 	r.spriteBatch.Begin()
@@ -198,48 +198,18 @@ func (r *BaseRenderer) Render(x1, y1, x2, y2 float32, rooms []Room, doors []Door
 			}
 		}
 
-		// for _, door := range doors {
-		// 	c := door.Bound.Color
-
-		// 	for i, vertex := range door.Bound.Vertices {
-		// 		r.spriteBatch.Draw(
-		// 			r.emptyTexture,
-		// 			vertex.X-size/2, vertex.Y-size/2, size, size,
-		// 			rendering.WithOrigin(size/2, size/2),
-		// 			rendering.WithColor(c),
-		// 		)
-
-		// 		to := door.Bound.Vertices[(i+1)%len(door.Bound.Vertices)]
-		// 		edge := to.Sub(vertex)
-		// 		angle := math.Atan232(edge.Y, edge.X)
-
-		// 		r.spriteBatch.Draw(
-		// 			r.emptyTexture,
-		// 			vertex.X, vertex.Y, edge.Len(), 5,
-		// 			rendering.WithRotation(angle),
-		// 			rendering.WithOrigin(0, 1),
-		// 			rendering.WithColor(c),
-		// 		)
-		// 	}
-		// }
-
-		//
-		//
-
-		// TODO
-
 		for _, node := range navigationGraph.Nodes {
 			r.spriteBatch.Draw(
 				r.emptyTexture,
-				node.X-size/2, node.Y-size/2, size, size,
+				node.Center.X-size/2, node.Center.Y-size/2, size, size,
 				rendering.WithOrigin(size/2, size/2),
 				rendering.WithColor(rendering.Color{1, 0, 0, 1}),
 			)
 		}
 
 		for _, edge := range navigationGraph.Edges {
-			from := math.Vector{navigationGraph.Nodes[edge.From].X - size/2, navigationGraph.Nodes[edge.From].Y - size/2}
-			to := math.Vector{navigationGraph.Nodes[edge.To].X - size/2, navigationGraph.Nodes[edge.To].Y - size/2}
+			from := math.Vector{navigationGraph.Nodes[edge.From].Center.X - size/2, navigationGraph.Nodes[edge.From].Center.Y - size/2}
+			to := math.Vector{navigationGraph.Nodes[edge.To].Center.X - size/2, navigationGraph.Nodes[edge.To].Center.Y - size/2}
 
 			edge := to.Sub(from)
 			angle := math.Atan232(edge.Y, edge.X)

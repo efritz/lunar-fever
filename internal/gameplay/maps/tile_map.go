@@ -65,6 +65,15 @@ var TileBitIndexes = []TileBitIndex{
 	TERMINUS_NE_BIT,
 }
 
+func bits(indexes ...TileBitIndex) int64 {
+	var val int64
+	for _, index := range indexes {
+		val |= 1 << index
+	}
+
+	return val
+}
+
 type TileMap struct {
 	width    int
 	height   int
