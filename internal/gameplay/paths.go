@@ -6,7 +6,10 @@ import (
 )
 
 type PathfindingComponent struct {
-	Target []math.Vector
+	Portals    []Portal
+	Path       []math.Vector
+	TargetCopy []math.Vector
+	Target     []math.Vector
 }
 
 type PathfindingComponentType struct{}
@@ -99,4 +102,28 @@ func reconstructPath(goal *nodeInfo, nodes map[int]*nodeInfo) []int {
 	}
 
 	return path
+}
+
+//
+//
+//
+
+func SmoothPath(navigationGraph *maps.NavigationGraph, path []int, startPoint, endPoint math.Vector) []math.Vector {
+	var points []math.Vector
+	points = append(points, startPoint)
+
+	for _, id := range path {
+		points = append(points, navigationGraph.Nodes[id].Center)
+	}
+
+	return append(points, endPoint)
+}
+
+func constructPortals(navigationGraph *maps.NavigationGraph, path []int, startPoint, endPoint math.Vector) []Portal {
+	return nil
+}
+
+type Portal struct {
+	Left  math.Vector
+	Right math.Vector
 }
