@@ -21,7 +21,16 @@ type Updater struct {
 	updateChecksum string
 }
 
+const skipUpdate = true
+
 func NewUpdater() (*Updater, error) {
+	if skipUpdate {
+		return &Updater{
+			binaryBasename: "",
+			updateChecksum: "",
+		}, nil
+	}
+
 	content, err := readFileFromServer("manifest.json")
 	if err != nil {
 		return nil, err
