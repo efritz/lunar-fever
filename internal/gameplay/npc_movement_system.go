@@ -50,15 +50,7 @@ func (s *npcMovementSystem) Process(elapsedMs int64) {
 				}
 			}
 
-			ids := search(s.Base.NavigationGraph, from.ID, to.ID)
-			pathfindingComponent.Path = SmoothPath(s.Base.NavigationGraph, ids, physicsComponent.Body.Position, target)
-			pathfindingComponent.Portals = constructPortals(s.Base.NavigationGraph, ids, physicsComponent.Body.Position, target)
-
-			pathfindingComponent.Target = nil
-			for _, id := range ids {
-				pathfindingComponent.Target = append(pathfindingComponent.Target, math.Vector{s.Base.NavigationGraph.Nodes[id].Center.X, s.Base.NavigationGraph.Nodes[id].Center.Y})
-			}
-			pathfindingComponent.TargetCopy = pathfindingComponent.Target
+			pathfindingComponent.Target = SmoothPath(s.Base.NavigationGraph, search(s.Base.NavigationGraph, from.ID, to.ID), physicsComponent.Body.Position, target)
 		}
 
 		mod := float32(1000)
