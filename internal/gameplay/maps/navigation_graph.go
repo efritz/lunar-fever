@@ -83,7 +83,7 @@ func boundsShareFreeEdge(a, b Bound, walls []Edge) bool {
 
 			if (v1.Equal(v3) && v2.Equal(v4)) || (v1.Equal(v4) && v2.Equal(v3)) {
 				for _, wall := range walls {
-					if (v1.Equal(wall.From) && v2.Equal(wall.To)) || (v1.Equal(wall.To) && v2.Equal(wall.From)) {
+					if axisAlignedSegmentsOverlap(v1, v2, wall.From, wall.To) {
 						return false
 					}
 				}
