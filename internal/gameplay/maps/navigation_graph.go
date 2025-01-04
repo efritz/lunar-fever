@@ -8,17 +8,19 @@ type NavigationGraph struct {
 }
 
 type NavigationNode struct {
+	Door   bool
 	Bound  Bound
 	Center math.Vector
 }
 
-func newNavigationNode(bound Bound) *NavigationNode {
+func newNavigationNode(bound Bound, door bool) *NavigationNode {
 	center := math.Vector{}
 	for _, vertex := range bound.Vertices {
 		center = center.Add(vertex)
 	}
 
 	return &NavigationNode{
+		Door:   door,
 		Bound:  bound,
 		Center: center.Divs(float32(len(bound.Vertices))),
 	}
@@ -29,21 +31,33 @@ type NavigationEdge struct {
 	To   int
 }
 
+type doorBound struct {
+	edge  Edge
+	bound Bound
+}
+
 // constructNavigationGraph returns a graph where each node is a unique bound and each edge
 // denotes two bounds that share an edge without an obstacle between them.
 func constructNavigationGraph(rooms []Room, walls []Edge, doors []Edge) *NavigationGraph {
 	nodes := map[int]*NavigationNode{}
 	for _, room := range rooms {
 		for _, bound := range room.Bounds {
-			nodes[bound.ID] = newNavigationNode(bound)
+			nodes[bound.ID] = newNavigationNode(bound, false)
 		}
+	}
+
+	var doorBounds []doorBound
+	for _, door := range doors {
+		bound := newBound(door.From, door.To)
+		doorBounds = append(doorBounds, doorBound{door, bound})
+		nodes[bound.ID] = newNavigationNode(bound, true)
 	}
 
 	return &NavigationGraph{
 		Nodes: nodes,
 		Edges: append(
 			findAdjacentBoundsWithinSameRoom(rooms, walls),
-			findAjacentBoundsConnectedByDoor(rooms, doors)...,
+			findAjacentBoundsConnectedByDoor(rooms, doorBounds)...,
 		),
 	}
 }
@@ -96,7 +110,7 @@ func boundsShareFreeEdge(a, b Bound, walls []Edge) bool {
 	return false
 }
 
-func findAjacentBoundsConnectedByDoor(rooms []Room, doors []Edge) []*NavigationEdge {
+func findAjacentBoundsConnectedByDoor(rooms []Room, doorBounds []doorBound) []*NavigationEdge {
 	type indexPair struct {
 		roomIndex  int
 		boundIndex int
@@ -105,8 +119,8 @@ func findAjacentBoundsConnectedByDoor(rooms []Room, doors []Edge) []*NavigationE
 
 	for i, room := range rooms {
 		for j, bound := range room.Bounds {
-			for k, door := range doors {
-				if edgeExistsOnBound(bound, door) {
+			for k, doorBound := range doorBounds {
+				if edgeExistsOnBound(bound, doorBound.edge) {
 					overlappingBoundsByDoorIndex[k] = append(overlappingBoundsByDoorIndex[k], indexPair{
 						roomIndex:  i,
 						boundIndex: j,
@@ -117,17 +131,17 @@ func findAjacentBoundsConnectedByDoor(rooms []Room, doors []Edge) []*NavigationE
 	}
 
 	var edges []*NavigationEdge
-	for _, overlappingBounds := range overlappingBoundsByDoorIndex {
+	for k, overlappingBounds := range overlappingBoundsByDoorIndex {
 		for i := 0; i < len(overlappingBounds); i++ {
-			for j := i + 1; j < len(overlappingBounds); j++ {
-				b1 := overlappingBounds[i]
-				b2 := overlappingBounds[j]
+			b1 := overlappingBounds[i]
 
-				edges = append(edges, &NavigationEdge{
-					From: rooms[b1.roomIndex].Bounds[b1.boundIndex].ID,
-					To:   rooms[b2.roomIndex].Bounds[b2.boundIndex].ID,
-				})
-			}
+			edges = append(
+				edges,
+				&NavigationEdge{
+					From: doorBounds[k].bound.ID,
+					To:   rooms[b1.roomIndex].Bounds[b1.boundIndex].ID,
+				},
+			)
 		}
 	}
 

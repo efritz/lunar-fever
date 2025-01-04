@@ -105,7 +105,18 @@ func reconstructPath(goal *nodeInfo, nodes map[int]*nodeInfo) []int {
 //
 
 func SmoothPath(navigationGraph *maps.NavigationGraph, path []int, startPoint, endPoint math.Vector) []math.Vector {
-	// Get the portals
+	for i, v := range path {
+		if navigationGraph.Nodes[v].Door {
+			first := SmoothPath(navigationGraph, path[:i], startPoint, navigationGraph.Nodes[v].Center)
+			second := SmoothPath(navigationGraph, path[i+1:], navigationGraph.Nodes[v].Center, endPoint)
+			return append(first, second...)
+		}
+	}
+
+	return SmoothPath2(navigationGraph, path, startPoint, endPoint)
+}
+
+func SmoothPath2(navigationGraph *maps.NavigationGraph, path []int, startPoint, endPoint math.Vector) []math.Vector {
 	portals := constructPortals(navigationGraph, path, startPoint, endPoint)
 	if len(portals) == 0 {
 		return []math.Vector{startPoint, endPoint}
@@ -215,6 +226,10 @@ func constructPortals(navigationGraph *maps.NavigationGraph, path []int, startPo
 
 // findSharedEdge finds the common edge between two triangles
 func findSharedEdge(tri1, tri2 []math.Vector) []math.Vector {
+	if len(tri1) != 3 || len(tri2) != 3 {
+		panic("findSharedEdge called with non-triangle")
+	}
+
 	for i := 0; i < 3; i++ {
 		for j := 0; j < 3; j++ {
 			if (tri1[i].Equal(tri2[j]) && tri1[(i+1)%3].Equal(tri2[(j+1)%3])) ||
