@@ -79,12 +79,18 @@ func extractWallsAndDoors(tileMap *TileMap) (walls []Edge, doors []Edge) {
 			if tileMap.GetBit(row, col, INTERIOR_WALL_N_BIT) {
 				walls = append(walls, newEdge(vec(col, row), vec(col+1, row)))
 			}
-			if tileMap.GetBit(row, col, DOOR_N_BIT) {
-				doors = append(doors, newEdge(vec(col, row), vec(col+1, row)))
-			}
-
 			if tileMap.GetBit(row, col, INTERIOR_WALL_E_BIT) {
 				walls = append(walls, newEdge(vec(col+1, row), vec(col+1, row+1)))
+			}
+			if tileMap.GetBit(row, col, INTERIOR_WALL_S_BIT) {
+				walls = append(walls, newEdge(vec(col, row+1), vec(col+1, row+1)))
+			}
+			if tileMap.GetBit(row, col, INTERIOR_WALL_W_BIT) {
+				walls = append(walls, newEdge(vec(col, row), vec(col, row+1)))
+			}
+
+			if tileMap.GetBit(row, col, DOOR_N_BIT) {
+				doors = append(doors, newEdge(vec(col, row), vec(col+1, row)))
 			}
 			if tileMap.GetBit(row, col, DOOR_E_BIT) {
 				doors = append(doors, newEdge(vec(col+1, row), vec(col+1, row+1)))

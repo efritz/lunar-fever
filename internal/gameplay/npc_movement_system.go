@@ -50,7 +50,7 @@ func (s *npcMovementSystem) Process(elapsedMs int64) {
 				}
 			}
 
-			pathfindingComponent.Target = SmoothPath(s.Base.NavigationGraph, search(s.Base.NavigationGraph, from.ID, to.ID), physicsComponent.Body.Position, target)
+			pathfindingComponent.Target = smoothPath(s.Base.NavigationGraph, search(s.Base.NavigationGraph, from.ID, to.ID), physicsComponent.Body.Position, target)
 		}
 
 		mod := float32(1000)

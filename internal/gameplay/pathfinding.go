@@ -104,19 +104,56 @@ func reconstructPath(goal *nodeInfo, nodes map[int]*nodeInfo) []int {
 //
 //
 
-func SmoothPath(navigationGraph *maps.NavigationGraph, path []int, startPoint, endPoint math.Vector) []math.Vector {
+func smoothPath(navigationGraph *maps.NavigationGraph, path []int, startPoint, endPoint math.Vector) []math.Vector {
+	const offsetDistance = 40.0
+
+	waypoints := smoothPathsBetweenDoors(navigationGraph, path, startPoint, endPoint)
+	for i, waypoint := range waypoints {
+		var collisions []maps.Edge
+		for _, obstacle := range navigationGraph.Obstacles {
+			if waypoint.Equal(obstacle.From) || waypoint.Equal(obstacle.To) {
+				collisions = append(collisions, obstacle)
+			}
+		}
+
+		if len(collisions) > 0 {
+			var totalNormal math.Vector
+			for _, obstacle := range collisions {
+				if obstacle.From.X == obstacle.To.X {
+					if waypoint.Y == math.Min(obstacle.From.Y, obstacle.To.Y) {
+						totalNormal = totalNormal.Add(math.Vector{0, -1})
+					} else {
+						totalNormal = totalNormal.Add(math.Vector{0, +1})
+					}
+				} else {
+					if waypoint.X == math.Min(obstacle.From.X, obstacle.To.X) {
+						totalNormal = totalNormal.Add(math.Vector{-1, 0})
+					} else {
+						totalNormal = totalNormal.Add(math.Vector{+1, 0})
+					}
+				}
+			}
+
+			waypoints[i] = waypoint.Add(totalNormal.Normalize().Muls(offsetDistance))
+		}
+	}
+
+	return waypoints
+}
+
+func smoothPathsBetweenDoors(navigationGraph *maps.NavigationGraph, path []int, startPoint, endPoint math.Vector) []math.Vector {
 	for i, v := range path {
 		if navigationGraph.Nodes[v].Door {
-			first := SmoothPath(navigationGraph, path[:i], startPoint, navigationGraph.Nodes[v].Center)
-			second := SmoothPath(navigationGraph, path[i+1:], navigationGraph.Nodes[v].Center, endPoint)
+			first := smoothPathsBetweenDoors(navigationGraph, path[:i], startPoint, navigationGraph.Nodes[v].Center)
+			second := smoothPathsBetweenDoors(navigationGraph, path[i+1:], navigationGraph.Nodes[v].Center, endPoint)
 			return append(first, second...)
 		}
 	}
 
-	return SmoothPath2(navigationGraph, path, startPoint, endPoint)
+	return smoothPathSegment(navigationGraph, path, startPoint, endPoint)
 }
 
-func SmoothPath2(navigationGraph *maps.NavigationGraph, path []int, startPoint, endPoint math.Vector) []math.Vector {
+func smoothPathSegment(navigationGraph *maps.NavigationGraph, path []int, startPoint, endPoint math.Vector) []math.Vector {
 	portals := constructPortals(navigationGraph, path, startPoint, endPoint)
 	if len(portals) == 0 {
 		return []math.Vector{startPoint, endPoint}

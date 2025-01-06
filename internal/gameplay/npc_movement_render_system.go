@@ -4,6 +4,7 @@ import (
 	"github.com/efritz/lunar-fever/internal/common/math"
 	"github.com/efritz/lunar-fever/internal/engine/ecs/system"
 	"github.com/efritz/lunar-fever/internal/engine/rendering"
+	"github.com/efritz/lunar-fever/internal/gameplay/maps"
 )
 
 type npcMovementRenderSystem struct {
@@ -37,12 +38,39 @@ func (s *npcMovementRenderSystem) Process(elapsedMs int64) {
 
 		prev := physicsComponent.Body.Position
 		for _, waypoint := range pathfindingComponent.Target {
-			size := float32(4)
+			size := float32(8)
 			from := prev
 			to := math.Vector{waypoint.X - size/2, waypoint.Y - size/2}
 
+			var collisions []maps.Edge
+			for _, obstacle := range s.Base.NavigationGraph.Obstacles {
+				if waypoint.Equal(obstacle.From) || waypoint.Equal(obstacle.To) {
+					collisions = append(collisions, obstacle)
+				}
+			}
+
+			for _, co := range collisions {
+				minX := math.Min(co.From.X, co.To.X)
+				maxX := math.Max(co.From.X, co.To.X)
+				minY := math.Min(co.From.Y, co.To.Y)
+				maxY := math.Max(co.From.Y, co.To.Y)
+
+				s.SpriteBatch.Draw(
+					s.emptyTexture,
+					minX, minY, maxX-minX+5, maxY-minY+5,
+					rendering.WithColor(rendering.Color{1, 0, 0, 1}),
+				)
+			}
+
 			edge := to.Sub(from)
 			angle := math.Atan232(edge.Y, edge.X)
+
+			s.SpriteBatch.Draw(
+				s.emptyTexture,
+				to.X+size/2, to.Y+size/2, size, size,
+				rendering.WithOrigin(size/2, size/2),
+				rendering.WithColor(rendering.Color{0, 1, 1, 1}),
+			)
 
 			s.SpriteBatch.Draw(
 				s.emptyTexture,

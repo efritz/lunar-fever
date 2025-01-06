@@ -3,8 +3,9 @@ package maps
 import "github.com/efritz/lunar-fever/internal/common/math"
 
 type NavigationGraph struct {
-	Nodes map[int]*NavigationNode
-	Edges []*NavigationEdge
+	Nodes     map[int]*NavigationNode
+	Edges     []*NavigationEdge
+	Obstacles []Edge
 }
 
 type NavigationNode struct {
@@ -59,6 +60,7 @@ func constructNavigationGraph(rooms []Room, walls []Edge, doors []Edge) *Navigat
 			findAdjacentBoundsWithinSameRoom(rooms, walls),
 			findAjacentBoundsConnectedByDoor(rooms, doorBounds)...,
 		),
+		Obstacles: walls,
 	}
 }
 
