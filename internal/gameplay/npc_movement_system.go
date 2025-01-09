@@ -36,7 +36,10 @@ func (s *npcMovementSystem) Process(elapsedMs int64) {
 
 		if s.Mouse.LeftButtonNewlyDown() {
 			target := math.Vector{mx, my}
+			pathfindingComponent.Target = &target
+		}
 
+		if pathfindingComponent.Target != nil {
 			var from, to maps.Bound
 			for _, room := range s.Base.Rooms {
 				for _, bound := range room.Bounds {
@@ -44,21 +47,24 @@ func (s *npcMovementSystem) Process(elapsedMs int64) {
 						from = bound
 					}
 
-					if contains(bound, target) {
+					if contains(bound, *pathfindingComponent.Target) {
 						to = bound
 					}
 				}
 			}
 
-			pathfindingComponent.Target = smoothPath(s.Base.NavigationGraph, search(s.Base.NavigationGraph, from.ID, to.ID), physicsComponent.Body.Position, target)
+			path := smoothPath(s.Base.NavigationGraph, search(s.Base.NavigationGraph, from.ID, to.ID), physicsComponent.Body.Position, *pathfindingComponent.Target)
+			pathfindingComponent.Waypoints = path[1:]
+		} else {
+			pathfindingComponent.Waypoints = nil
 		}
 
 		mod := float32(1000)
 		speed := float32(.35)
 		transitionSpeed := float32(4)
 
-		if len(pathfindingComponent.Target) > 0 {
-			angle := math.Atan232(pathfindingComponent.Target[0].Y-physicsComponent.Body.Position.Y, pathfindingComponent.Target[0].X-physicsComponent.Body.Position.X)
+		if len(pathfindingComponent.Waypoints) > 0 {
+			angle := math.Atan232(pathfindingComponent.Waypoints[0].Y-physicsComponent.Body.Position.Y, pathfindingComponent.Waypoints[0].X-physicsComponent.Body.Position.X)
 			if angle < 0 {
 				angle = (2 * stdmath.Pi) - (-angle)
 			}
@@ -70,11 +76,13 @@ func (s *npcMovementSystem) Process(elapsedMs int64) {
 
 			physicsComponent.Body.LinearVelocity =
 				physicsComponent.Body.LinearVelocity.Muls(1 - (float32(elapsedMs) / mod * transitionSpeed)).Add(
-					pathfindingComponent.Target[0].Sub(physicsComponent.Body.Position).Normalize().Muls(speed * float32(elapsedMs) / mod * transitionSpeed),
+					pathfindingComponent.Waypoints[0].Sub(physicsComponent.Body.Position).Normalize().Muls(speed * float32(elapsedMs) / mod * transitionSpeed),
 				)
 
-			if pathfindingComponent.Target[0].Sub(physicsComponent.Body.Position).Len() < 30 {
-				pathfindingComponent.Target = pathfindingComponent.Target[1:]
+			if len(pathfindingComponent.Waypoints) == 1 {
+				if dist := pathfindingComponent.Waypoints[0].Sub(physicsComponent.Body.Position).Len(); dist < 30 {
+					pathfindingComponent.Target = nil
+				}
 			}
 		} else {
 			physicsComponent.Body.LinearVelocity = math.Vector{0, 0}

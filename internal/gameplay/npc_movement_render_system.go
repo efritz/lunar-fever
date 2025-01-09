@@ -37,7 +37,7 @@ func (s *npcMovementRenderSystem) Process(elapsedMs int64) {
 		}
 
 		prev := physicsComponent.Body.Position
-		for _, waypoint := range pathfindingComponent.Target {
+		for _, waypoint := range pathfindingComponent.Waypoints {
 			size := float32(8)
 			from := prev
 			to := math.Vector{waypoint.X - size/2, waypoint.Y - size/2}

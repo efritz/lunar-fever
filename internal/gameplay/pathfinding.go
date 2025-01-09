@@ -6,7 +6,9 @@ import (
 )
 
 type PathfindingComponent struct {
-	Target []math.Vector
+	// NextWaypoint []math.Vector
+	Target    *math.Vector
+	Waypoints []math.Vector
 }
 
 type PathfindingComponentType struct{}
