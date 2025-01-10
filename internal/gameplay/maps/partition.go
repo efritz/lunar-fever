@@ -44,13 +44,44 @@ func partitionRooms(tileMap *TileMap) (_ []Room, walls []Edge, doors []Edge) {
 	boundsByID := map[int][]Bound{}
 	for row, cols := range board {
 		for col, id := range cols {
-			if id != 0 {
-				boundsByID[id] = append(boundsByID[id], newBound(
-					vec(col, row),
-					vec(col+1, row),
-					vec(col+1, row+1),
-					vec(col, row+1),
-				))
+			if id == 0 {
+				continue
+			}
+
+			vec := func(col, row int) math.Vector {
+				return math.Vector{
+					X: float32(col),
+					Y: float32(row),
+				}
+			}
+
+			ul := newBound(vec(col*64+0*32, row*64+0*32), vec(col*64+1*32, row*64+0*32), vec(col*64+1*32, row*64+1*32), vec(col*64+0*32, row*64+1*32))
+			ur := newBound(vec(col*64+1*32, row*64+0*32), vec(col*64+2*32, row*64+0*32), vec(col*64+2*32, row*64+1*32), vec(col*64+1*32, row*64+1*32))
+			ll := newBound(vec(col*64+0*32, row*64+1*32), vec(col*64+1*32, row*64+1*32), vec(col*64+1*32, row*64+2*32), vec(col*64+0*32, row*64+2*32))
+			lr := newBound(vec(col*64+1*32, row*64+1*32), vec(col*64+2*32, row*64+1*32), vec(col*64+2*32, row*64+2*32), vec(col*64+1*32, row*64+2*32))
+
+			if tileMap.GetBit(row, col, DOOR_N_BIT) || tileMap.GetBit(row, col, DOOR_W_BIT) ||
+				(!tileMap.GetBit(row, col, INTERIOR_WALL_N_BIT) && !tileMap.GetBit(row, col, INTERIOR_WALL_W_BIT) &&
+					!tileMap.GetBit(row, col-1, INTERIOR_WALL_N_BIT) && !tileMap.GetBit(row-1, col, INTERIOR_WALL_W_BIT)) {
+				boundsByID[id] = append(boundsByID[id], ul)
+			}
+
+			if tileMap.GetBit(row, col, DOOR_N_BIT) || tileMap.GetBit(row, col, DOOR_E_BIT) ||
+				(!tileMap.GetBit(row, col, INTERIOR_WALL_N_BIT) && !tileMap.GetBit(row, col, INTERIOR_WALL_E_BIT) &&
+					!tileMap.GetBit(row, col+1, INTERIOR_WALL_N_BIT) && !tileMap.GetBit(row-1, col, INTERIOR_WALL_E_BIT)) {
+				boundsByID[id] = append(boundsByID[id], ur)
+			}
+
+			if tileMap.GetBit(row, col, DOOR_S_BIT) || tileMap.GetBit(row, col, DOOR_W_BIT) ||
+				(!tileMap.GetBit(row, col, INTERIOR_WALL_S_BIT) && !tileMap.GetBit(row, col, INTERIOR_WALL_W_BIT) &&
+					!tileMap.GetBit(row, col-1, INTERIOR_WALL_S_BIT) && !tileMap.GetBit(row+1, col, INTERIOR_WALL_W_BIT)) {
+				boundsByID[id] = append(boundsByID[id], ll)
+			}
+
+			if tileMap.GetBit(row, col, DOOR_S_BIT) || tileMap.GetBit(row, col, DOOR_E_BIT) ||
+				(!tileMap.GetBit(row, col, INTERIOR_WALL_S_BIT) && !tileMap.GetBit(row, col, INTERIOR_WALL_E_BIT) &&
+					!tileMap.GetBit(row, col+1, INTERIOR_WALL_S_BIT) && !tileMap.GetBit(row+1, col, INTERIOR_WALL_E_BIT)) {
+				boundsByID[id] = append(boundsByID[id], lr)
 			}
 		}
 	}
@@ -67,7 +98,22 @@ func partitionRooms(tileMap *TileMap) (_ []Room, walls []Edge, doors []Edge) {
 		// (3) Adding back vertices that denote the extent of overlap with doors and other bounds (to help with triangulation).
 		// (4) Triangulating the resulting polygons.
 
-		rooms = append(rooms, newRoom(triangulate(splitBoundsAtIntersections(simplifyBounds(mergeBounds(bounds, obstacles)), doors))))
+		//
+		_ = obstacles
+
+		rooms = append(rooms, newRoom(
+			triangulate(
+				// splitBoundsAtIntersections(
+				simplifyBounds(
+					mergeBounds(
+						bounds,
+						obstacles,
+					),
+				),
+			// doors,
+			// ),
+			),
+		))
 	}
 
 	return rooms, walls, doors

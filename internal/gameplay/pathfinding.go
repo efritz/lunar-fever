@@ -107,38 +107,36 @@ func reconstructPath(goal *nodeInfo, nodes map[int]*nodeInfo) []int {
 //
 
 func smoothPath(navigationGraph *maps.NavigationGraph, path []int, startPoint, endPoint math.Vector) []math.Vector {
-	const offsetDistance = 40.0
-
 	waypoints := smoothPathsBetweenDoors(navigationGraph, path, startPoint, endPoint)
-	for i, waypoint := range waypoints {
-		var collisions []maps.Edge
-		for _, obstacle := range navigationGraph.Obstacles {
-			if waypoint.Equal(obstacle.From) || waypoint.Equal(obstacle.To) {
-				collisions = append(collisions, obstacle)
-			}
-		}
+	// for i, waypoint := range waypoints {
+	// 	var collisions []maps.Edge
+	// 	for _, obstacle := range navigationGraph.Obstacles {
+	// 		if waypoint.Equal(obstacle.From) || waypoint.Equal(obstacle.To) {
+	// 			collisions = append(collisions, obstacle)
+	// 		}
+	// 	}
 
-		if len(collisions) > 0 {
-			var totalNormal math.Vector
-			for _, obstacle := range collisions {
-				if obstacle.From.X == obstacle.To.X {
-					if waypoint.Y == math.Min(obstacle.From.Y, obstacle.To.Y) {
-						totalNormal = totalNormal.Add(math.Vector{0, -1})
-					} else {
-						totalNormal = totalNormal.Add(math.Vector{0, +1})
-					}
-				} else {
-					if waypoint.X == math.Min(obstacle.From.X, obstacle.To.X) {
-						totalNormal = totalNormal.Add(math.Vector{-1, 0})
-					} else {
-						totalNormal = totalNormal.Add(math.Vector{+1, 0})
-					}
-				}
-			}
+	// 	if len(collisions) > 0 {
+	// 		var totalNormal math.Vector
+	// 		for _, obstacle := range collisions {
+	// 			if obstacle.From.X == obstacle.To.X {
+	// 				if waypoint.Y == math.Min(obstacle.From.Y, obstacle.To.Y) {
+	// 					totalNormal = totalNormal.Add(math.Vector{0, -1})
+	// 				} else {
+	// 					totalNormal = totalNormal.Add(math.Vector{0, +1})
+	// 				}
+	// 			} else {
+	// 				if waypoint.X == math.Min(obstacle.From.X, obstacle.To.X) {
+	// 					totalNormal = totalNormal.Add(math.Vector{-1, 0})
+	// 				} else {
+	// 					totalNormal = totalNormal.Add(math.Vector{+1, 0})
+	// 				}
+	// 			}
+	// 		}
 
-			waypoints[i] = waypoint.Add(totalNormal.Normalize().Muls(offsetDistance))
-		}
-	}
+	// 		waypoints[i] = waypoint.Add(totalNormal.Normalize().Muls(offsetDistance))
+	// 	}
+	// }
 
 	return waypoints
 }
