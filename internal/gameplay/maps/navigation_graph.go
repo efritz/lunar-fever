@@ -49,7 +49,7 @@ func constructNavigationGraph(rooms []Room, walls []Edge, doors []Edge) *Navigat
 
 	var doorBounds []doorBound
 	for _, door := range doors {
-		bound := newBound(door.From, door.To)
+		bound := expandObstacleEdge(door)
 		doorBounds = append(doorBounds, doorBound{door, bound})
 		nodes[bound.ID] = newNavigationNode(bound, true)
 	}
@@ -122,7 +122,8 @@ func findAjacentBoundsConnectedByDoor(rooms []Room, doorBounds []doorBound) []*N
 	for i, room := range rooms {
 		for j, bound := range room.Bounds {
 			for k, doorBound := range doorBounds {
-				if edgeExistsOnBound(bound, doorBound.edge) {
+				if boundsShareFreeEdge(bound, doorBound.bound, nil) {
+					// if edgeExistsOnBound(bound, doorBound.edge) {
 					overlappingBoundsByDoorIndex[k] = append(overlappingBoundsByDoorIndex[k], indexPair{
 						roomIndex:  i,
 						boundIndex: j,

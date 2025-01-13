@@ -48,41 +48,48 @@ func partitionRooms(tileMap *TileMap) (_ []Room, walls []Edge, doors []Edge) {
 				continue
 			}
 
-			vec := func(col, row int) math.Vector {
-				return math.Vector{
-					X: float32(col),
-					Y: float32(row),
-				}
-			}
+			boundsByID[id] = append(boundsByID[id], newBound(
+				math.Vector{float32(col * 64), float32(row * 64)},
+				math.Vector{float32(col+1) * 64, float32(row * 64)},
+				math.Vector{float32(col+1) * 64, float32(row+1) * 64},
+				math.Vector{float32(col * 64), float32(row+1) * 64},
+			))
 
-			ul := newBound(vec(col*64+0*32, row*64+0*32), vec(col*64+1*32, row*64+0*32), vec(col*64+1*32, row*64+1*32), vec(col*64+0*32, row*64+1*32))
-			ur := newBound(vec(col*64+1*32, row*64+0*32), vec(col*64+2*32, row*64+0*32), vec(col*64+2*32, row*64+1*32), vec(col*64+1*32, row*64+1*32))
-			ll := newBound(vec(col*64+0*32, row*64+1*32), vec(col*64+1*32, row*64+1*32), vec(col*64+1*32, row*64+2*32), vec(col*64+0*32, row*64+2*32))
-			lr := newBound(vec(col*64+1*32, row*64+1*32), vec(col*64+2*32, row*64+1*32), vec(col*64+2*32, row*64+2*32), vec(col*64+1*32, row*64+2*32))
+			// vec := func(col, row int) math.Vector {
+			// 	return math.Vector{
+			// 		X: float32(col),
+			// 		Y: float32(row),
+			// 	}
+			// }
 
-			if tileMap.GetBit(row, col, DOOR_N_BIT) || tileMap.GetBit(row, col, DOOR_W_BIT) ||
-				(!tileMap.GetBit(row, col, INTERIOR_WALL_N_BIT) && !tileMap.GetBit(row, col, INTERIOR_WALL_W_BIT) &&
-					!tileMap.GetBit(row, col-1, INTERIOR_WALL_N_BIT) && !tileMap.GetBit(row-1, col, INTERIOR_WALL_W_BIT)) {
-				boundsByID[id] = append(boundsByID[id], ul)
-			}
+			// ul := newBound(vec(col*64+0*32, row*64+0*32), vec(col*64+1*32, row*64+0*32), vec(col*64+1*32, row*64+1*32), vec(col*64+0*32, row*64+1*32))
+			// ur := newBound(vec(col*64+1*32, row*64+0*32), vec(col*64+2*32, row*64+0*32), vec(col*64+2*32, row*64+1*32), vec(col*64+1*32, row*64+1*32))
+			// ll := newBound(vec(col*64+0*32, row*64+1*32), vec(col*64+1*32, row*64+1*32), vec(col*64+1*32, row*64+2*32), vec(col*64+0*32, row*64+2*32))
+			// lr := newBound(vec(col*64+1*32, row*64+1*32), vec(col*64+2*32, row*64+1*32), vec(col*64+2*32, row*64+2*32), vec(col*64+1*32, row*64+2*32))
 
-			if tileMap.GetBit(row, col, DOOR_N_BIT) || tileMap.GetBit(row, col, DOOR_E_BIT) ||
-				(!tileMap.GetBit(row, col, INTERIOR_WALL_N_BIT) && !tileMap.GetBit(row, col, INTERIOR_WALL_E_BIT) &&
-					!tileMap.GetBit(row, col+1, INTERIOR_WALL_N_BIT) && !tileMap.GetBit(row-1, col, INTERIOR_WALL_E_BIT)) {
-				boundsByID[id] = append(boundsByID[id], ur)
-			}
+			// if tileMap.GetBit(row, col, DOOR_N_BIT) || tileMap.GetBit(row, col, DOOR_W_BIT) ||
+			// 	(!tileMap.GetBit(row, col, INTERIOR_WALL_N_BIT) && !tileMap.GetBit(row, col, INTERIOR_WALL_W_BIT) &&
+			// 		!tileMap.GetBit(row, col-1, INTERIOR_WALL_N_BIT) && !tileMap.GetBit(row-1, col, INTERIOR_WALL_W_BIT)) {
+			// 	boundsByID[id] = append(boundsByID[id], ul)
+			// }
 
-			if tileMap.GetBit(row, col, DOOR_S_BIT) || tileMap.GetBit(row, col, DOOR_W_BIT) ||
-				(!tileMap.GetBit(row, col, INTERIOR_WALL_S_BIT) && !tileMap.GetBit(row, col, INTERIOR_WALL_W_BIT) &&
-					!tileMap.GetBit(row, col-1, INTERIOR_WALL_S_BIT) && !tileMap.GetBit(row+1, col, INTERIOR_WALL_W_BIT)) {
-				boundsByID[id] = append(boundsByID[id], ll)
-			}
+			// if tileMap.GetBit(row, col, DOOR_N_BIT) || tileMap.GetBit(row, col, DOOR_E_BIT) ||
+			// 	(!tileMap.GetBit(row, col, INTERIOR_WALL_N_BIT) && !tileMap.GetBit(row, col, INTERIOR_WALL_E_BIT) &&
+			// 		!tileMap.GetBit(row, col+1, INTERIOR_WALL_N_BIT) && !tileMap.GetBit(row-1, col, INTERIOR_WALL_E_BIT)) {
+			// 	boundsByID[id] = append(boundsByID[id], ur)
+			// }
 
-			if tileMap.GetBit(row, col, DOOR_S_BIT) || tileMap.GetBit(row, col, DOOR_E_BIT) ||
-				(!tileMap.GetBit(row, col, INTERIOR_WALL_S_BIT) && !tileMap.GetBit(row, col, INTERIOR_WALL_E_BIT) &&
-					!tileMap.GetBit(row, col+1, INTERIOR_WALL_S_BIT) && !tileMap.GetBit(row+1, col, INTERIOR_WALL_E_BIT)) {
-				boundsByID[id] = append(boundsByID[id], lr)
-			}
+			// if tileMap.GetBit(row, col, DOOR_S_BIT) || tileMap.GetBit(row, col, DOOR_W_BIT) ||
+			// 	(!tileMap.GetBit(row, col, INTERIOR_WALL_S_BIT) && !tileMap.GetBit(row, col, INTERIOR_WALL_W_BIT) &&
+			// 		!tileMap.GetBit(row, col-1, INTERIOR_WALL_S_BIT) && !tileMap.GetBit(row+1, col, INTERIOR_WALL_W_BIT)) {
+			// 	boundsByID[id] = append(boundsByID[id], ll)
+			// }
+
+			// if tileMap.GetBit(row, col, DOOR_S_BIT) || tileMap.GetBit(row, col, DOOR_E_BIT) ||
+			// 	(!tileMap.GetBit(row, col, INTERIOR_WALL_S_BIT) && !tileMap.GetBit(row, col, INTERIOR_WALL_E_BIT) &&
+			// 		!tileMap.GetBit(row, col+1, INTERIOR_WALL_S_BIT) && !tileMap.GetBit(row+1, col, INTERIOR_WALL_E_BIT)) {
+			// 	boundsByID[id] = append(boundsByID[id], lr)
+			// }
 		}
 	}
 
@@ -103,15 +110,18 @@ func partitionRooms(tileMap *TileMap) (_ []Room, walls []Edge, doors []Edge) {
 
 		rooms = append(rooms, newRoom(
 			triangulate(
-				// splitBoundsAtIntersections(
-				simplifyBounds(
-					mergeBounds(
-						bounds,
+				splitBoundsAtIntersections(
+					subtract(
+						simplifyBounds(
+							mergeBounds(
+								bounds,
+								obstacles,
+							),
+						),
 						obstacles,
 					),
+					doors,
 				),
-			// doors,
-			// ),
 			),
 		))
 	}

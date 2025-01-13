@@ -198,29 +198,31 @@ func (r *BaseRenderer) Render(x1, y1, x2, y2 float32, rooms []Room, navigationGr
 			}
 		}
 
-		for _, node := range navigationGraph.Nodes {
-			r.spriteBatch.Draw(
-				r.emptyTexture,
-				node.Center.X-size/2, node.Center.Y-size/2, size, size,
-				rendering.WithOrigin(size/2, size/2),
-				rendering.WithColor(rendering.Color{1, 0, 0, 1}),
-			)
-		}
+		if true {
+			for _, node := range navigationGraph.Nodes {
+				r.spriteBatch.Draw(
+					r.emptyTexture,
+					node.Center.X-size/2, node.Center.Y-size/2, size, size,
+					rendering.WithOrigin(size/2, size/2),
+					rendering.WithColor(rendering.Color{1, 0, 0, 1}),
+				)
+			}
 
-		for _, edge := range navigationGraph.Edges {
-			from := math.Vector{navigationGraph.Nodes[edge.From].Center.X - size/2, navigationGraph.Nodes[edge.From].Center.Y - size/2}
-			to := math.Vector{navigationGraph.Nodes[edge.To].Center.X - size/2, navigationGraph.Nodes[edge.To].Center.Y - size/2}
+			for _, edge := range navigationGraph.Edges {
+				from := math.Vector{navigationGraph.Nodes[edge.From].Center.X - size/2, navigationGraph.Nodes[edge.From].Center.Y - size/2}
+				to := math.Vector{navigationGraph.Nodes[edge.To].Center.X - size/2, navigationGraph.Nodes[edge.To].Center.Y - size/2}
 
-			edge := to.Sub(from)
-			angle := math.Atan232(edge.Y, edge.X)
+				edge := to.Sub(from)
+				angle := math.Atan232(edge.Y, edge.X)
 
-			r.spriteBatch.Draw(
-				r.emptyTexture,
-				from.X+size/2, from.Y+size/2, edge.Len(), 1,
-				rendering.WithRotation(angle),
-				rendering.WithOrigin(0, 1),
-				rendering.WithColor(rendering.Color{1, 0, 0, 1}),
-			)
+				r.spriteBatch.Draw(
+					r.emptyTexture,
+					from.X+size/2, from.Y+size/2, edge.Len(), 1,
+					rendering.WithRotation(angle),
+					rendering.WithOrigin(0, 1),
+					rendering.WithColor(rendering.Color{1, 0, 0, 1}),
+				)
+			}
 		}
 	}
 

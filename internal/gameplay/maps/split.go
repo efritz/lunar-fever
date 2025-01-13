@@ -15,7 +15,14 @@ func splitBoundsAtIntersections(bounds []Bound, doors []Edge) []Bound {
 
 func splitBoundAtIntersections(bounds []Bound, bound Bound, doors []Edge) Bound {
 	var queue []Edge
-	queue = append(queue, doors...)
+
+	// queue = append(queue, doors...)
+	for _, door := range doors {
+		vx := expandObstacleEdge(door)
+		for i, v := range vx.Vertices {
+			queue = append(queue, newEdge(v, vx.Vertices[nextVertexIndex(i, len(vx.Vertices))]))
+		}
+	}
 
 	for _, other := range bounds {
 		if bound.ID != other.ID {

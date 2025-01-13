@@ -1,3 +1,7 @@
+github.com/engelsjk/polygol v0.0.3 h1:EG+yyPd/sPLNYUQ1KzlBz6OHfa0+EgAHQYLwsSgxF4k=
+github.com/engelsjk/polygol v0.0.3/go.mod h1:I11mpyToT6JcjiEYf7TtRjX326/rLxSNfT5MI1W6cy4=
+github.com/engelsjk/splay-tree v0.0.1 h1:9jWYhlLxSTubl8+Lgk/4mSe8iMQITwbRu+eVMkNTsUM=
+github.com/engelsjk/splay-tree v0.0.1/go.mod h1:5TalkXJDy1DjM0Dj1g4WcZ5bn1Y3YwUnPYH+XWtAXFY=
 github.com/go-gl/gl v0.0.0-20231021071112-07e5d0ea2e71 h1:5BVwOaUSBTlVZowGO6VZGw2H/zl9nrd3eCZfYV+NfQA=
 github.com/go-gl/gl v0.0.0-20231021071112-07e5d0ea2e71/go.mod h1:9YTyiznxEY1fVinfM7RvRcjRHbw2xLBJ3AAGIT0I4Nw=
 github.com/go-gl/glfw v0.0.0-20231124074035-2de0cf0c80af h1:V4DLCrN57QoLQYtwnlmGQvAIM6DMU5eMrR9VQhmxPPs=
