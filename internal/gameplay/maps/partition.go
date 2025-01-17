@@ -38,6 +38,20 @@ func partitionRooms(tileMap *TileMap) (_ []Room, walls []Edge, doors []Edge) {
 		}
 	}
 
+	fixtures := []Bound{}
+	for col := 0; col < tileMap.Width(); col++ {
+		for row := 0; row < tileMap.Height(); row++ {
+			if fixture, ok := tileMap.GetFixture(row, col); ok {
+				fixtures = append(fixtures, newBound(
+					math.Vector{float32(col * 64), float32(row * 64)},
+					math.Vector{float32(col+fixture.TileWidth) * 64, float32(row * 64)},
+					math.Vector{float32(col+fixture.TileWidth) * 64, float32(row+fixture.TileHeight) * 64},
+					math.Vector{float32(col * 64), float32(row+fixture.TileHeight) * 64},
+				))
+			}
+		}
+	}
+
 	// Next, we'll convert each of these connected components into a list of bounds.
 	// This creates one bound per tile, which we'll transform in the next steps.
 
@@ -105,9 +119,6 @@ func partitionRooms(tileMap *TileMap) (_ []Room, walls []Edge, doors []Edge) {
 		// (3) Adding back vertices that denote the extent of overlap with doors and other bounds (to help with triangulation).
 		// (4) Triangulating the resulting polygons.
 
-		//
-		_ = obstacles
-
 		rooms = append(rooms, newRoom(
 			triangulate(
 				splitBoundsAtIntersections(
@@ -119,6 +130,7 @@ func partitionRooms(tileMap *TileMap) (_ []Room, walls []Edge, doors []Edge) {
 							),
 						),
 						obstacles,
+						fixtures,
 					),
 					doors,
 				),

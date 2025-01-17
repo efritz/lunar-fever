@@ -9,21 +9,26 @@ type MapCommand interface {
 
 type MapCommandFactory interface {
 	Create(m *maps.TileMap, row, col int) MapCommand
-	Valid(m *maps.TileMap, row, col int) bool
+	AffectedTileIndexes(m *maps.TileMap, row, col int) []TileIndex
+}
+
+type TileIndex struct {
+	Row int
+	Col int
 }
 
 type mapCommandFactory struct {
-	createFunc createFuncType
-	validFunc  validFuncType
+	createFunc              createFuncType
+	affectedTileIndexesFunc affectedTileIndexesFuncType
 }
 
 type createFuncType func(m *maps.TileMap, row, col int) MapCommand
-type validFuncType func(m *maps.TileMap, row, col int) bool
+type affectedTileIndexesFuncType func(m *maps.TileMap, row, col int) []TileIndex
 
-func NewMapCommandFactory(createFunc createFuncType, validFunc validFuncType) MapCommandFactory {
+func NewMapCommandFactory(createFunc createFuncType, affectedTileIndexesFunc affectedTileIndexesFuncType) MapCommandFactory {
 	return &mapCommandFactory{
-		createFunc: createFunc,
-		validFunc:  validFunc,
+		createFunc:              createFunc,
+		affectedTileIndexesFunc: affectedTileIndexesFunc,
 	}
 }
 
@@ -31,6 +36,6 @@ func (f *mapCommandFactory) Create(m *maps.TileMap, row, col int) MapCommand {
 	return f.createFunc(m, row, col)
 }
 
-func (f *mapCommandFactory) Valid(m *maps.TileMap, row, col int) bool {
-	return f.validFunc(m, row, col)
+func (f *mapCommandFactory) AffectedTileIndexes(m *maps.TileMap, row, col int) []TileIndex {
+	return f.affectedTileIndexesFunc(m, row, col)
 }

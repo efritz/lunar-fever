@@ -9,8 +9,12 @@ type RemoveFloorMapCommand struct {
 }
 
 func NewRemoveFloorMapCommandFactory() MapCommandFactory {
-	return NewMapCommandFactory(NewRemoveFloorMapCommand, func(m *maps.TileMap, row, col int) bool {
-		return m.GetBit(row, col, maps.FLOOR_BIT)
+	return NewMapCommandFactory(NewRemoveFloorMapCommand, func(m *maps.TileMap, row, col int) []TileIndex {
+		if m.GetBit(row, col, maps.FLOOR_BIT) {
+			return []TileIndex{{row, col}}
+		}
+
+		return nil
 	})
 }
 

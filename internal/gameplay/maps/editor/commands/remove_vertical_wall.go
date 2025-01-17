@@ -9,8 +9,12 @@ type RemoveVerticalWallMapCommand struct {
 }
 
 func NewRemoveVerticalWallMapCommandFactory() MapCommandFactory {
-	return NewMapCommandFactory(NewRemoveVerticalWallMapCommand, func(m *maps.TileMap, row, col int) bool {
-		return m.GetAllBits(row, col, maps.FLOOR_BIT, maps.INTERIOR_WALL_E_BIT) && m.GetAllBits(row, col+1, maps.FLOOR_BIT, maps.INTERIOR_WALL_W_BIT)
+	return NewMapCommandFactory(NewRemoveVerticalWallMapCommand, func(m *maps.TileMap, row, col int) []TileIndex {
+		if m.GetAllBits(row, col, maps.FLOOR_BIT, maps.INTERIOR_WALL_E_BIT) && m.GetAllBits(row, col+1, maps.FLOOR_BIT, maps.INTERIOR_WALL_W_BIT) {
+			return []TileIndex{{row, col}}
+		}
+
+		return nil
 	})
 }
 

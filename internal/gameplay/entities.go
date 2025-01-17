@@ -107,3 +107,29 @@ func createWalls(ctx *GameContext) {
 		}
 	}
 }
+
+func createFixtures(ctx *GameContext) {
+	build := func(i, j, w, h int) {
+		entity := ctx.EntityManager.Create()
+		ctx.GroupManager.AddGroup(entity, "physics")
+		ctx.GroupManager.AddGroup(entity, "bench")
+
+		body := physics.NewBody("bench", []physics.Fixture{
+			physics.NewBasicFixture(
+				0, 0, 32*float32(w), 32*float32(h), // bounds
+				0.0, 0.5, // material
+				0, 0, // friction
+			),
+		})
+		body.Position = math.Vector{float32(j*64) + 32, float32(i*64) + 64}
+		ctx.PhysicsComponentManager.AddComponent(entity, &physics.PhysicsComponent{Body: body})
+	}
+
+	for i := 0; i < ctx.TileMap.Height(); i++ {
+		for j := 0; j < ctx.TileMap.Width(); j++ {
+			if fixture, ok := ctx.TileMap.GetFixture(i, j); ok {
+				build(i, j, fixture.TileWidth, fixture.TileHeight)
+			}
+		}
+	}
+}

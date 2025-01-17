@@ -65,6 +65,30 @@ var TileBitIndexes = []TileBitIndex{
 	TERMINUS_NE_BIT,
 }
 
+type Fixture struct {
+	AtlasRow   int
+	AtlasCol   int
+	TileWidth  int
+	TileHeight int
+	Bit        FixtureBit
+}
+
+type FixtureBit int64
+
+const (
+	FIXTURE_NONE FixtureBit = iota
+	FIXTURE_BENCH
+	FIXTURE_CHAIR
+	FIXTURE_GIANT_THING
+)
+
+var Fixtures = []Fixture{
+	{0, 0, 1, 1, FIXTURE_NONE},
+	{0, 0, 1, 2, FIXTURE_BENCH},
+	{2, 0, 1, 1, FIXTURE_CHAIR},
+	{4, 0, 2, 2, FIXTURE_GIANT_THING},
+}
+
 func bits(indexes ...TileBitIndex) int64 {
 	var val int64
 	for _, index := range indexes {
@@ -165,6 +189,18 @@ func (m *TileMap) GetAllBits(row, col int, bitIndexes ...TileBitIndex) bool {
 
 func (m *TileMap) GetBits(row, col int) int64 {
 	return m.data[m.bitsetIndex(row, col)]
+}
+
+func (m *TileMap) GetFixture(row, col int) (Fixture, bool) {
+	if fixtureBits := m.GetBits(row, col) >> 48; fixtureBits > 0 {
+		return Fixtures[fixtureBits], true
+	}
+
+	return Fixture{}, false
+}
+
+func (m *TileMap) SetFixture(row, col int, Fixture Fixture) {
+	m.SetBits(row, col, (m.GetBits(row, col)&0x0000FFFFFFFFFFFF)|(int64(Fixture.Bit)<<48))
 }
 
 func (m *TileMap) SetBit(row, col int, bitIndex TileBitIndex) {

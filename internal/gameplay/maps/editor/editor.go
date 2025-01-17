@@ -1,12 +1,11 @@
 package editor
 
 import (
-	"fmt"
-
 	"github.com/efritz/lunar-fever/internal/engine"
 	"github.com/efritz/lunar-fever/internal/engine/rendering"
 	"github.com/efritz/lunar-fever/internal/engine/view"
 	"github.com/efritz/lunar-fever/internal/gameplay/maps"
+	"github.com/efritz/lunar-fever/internal/gameplay/maps/editor/commands"
 	"github.com/efritz/lunar-fever/internal/gameplay/maps/loader"
 	"github.com/go-gl/glfw/v3.2/glfw"
 )
@@ -18,10 +17,11 @@ type Editor struct {
 	baseRenderer *maps.BaseRenderer
 	executor     *MapCommandExecutor
 
-	x, y             int
-	selected         Palette
-	performingAction bool
-	isValidSelection bool
+	x, y                int
+	selected            Palette
+	performingAction    bool
+	affectedTileIndexes []commands.TileIndex
+	isRemoveAction      bool
 }
 
 func NewEditor(engineCtx *engine.Context) view.View {
@@ -41,6 +41,7 @@ func (e *Editor) Init() {
 	e.baseRenderer = maps.NewBaseRenderer(e.SpriteBatch, e.TextureLoader, e.tileMap, true)
 	e.executor = NewMapCommandExecutor(e.tileMap)
 	e.selected = FLOOR_TOOL
+	initFonts()
 }
 
 func (e *Editor) Exit() {}
@@ -51,23 +52,23 @@ func (e *Editor) Update(elapsedMs int64, hasFocus bool) {
 
 	if e.Keyboard.IsKeyNewlyDown(glfw.Key1) {
 		e.selected = FLOOR_TOOL
-		fmt.Printf("Selected floor tool\n")
 	}
 	if e.Keyboard.IsKeyNewlyDown(glfw.Key2) {
-		e.selected = HWALL_TOOL
-		fmt.Printf("Selected horizontal wall tool\n")
+		if e.selected == VWALL_TOOL {
+			e.selected = HWALL_TOOL
+		} else {
+			e.selected = VWALL_TOOL
+		}
 	}
 	if e.Keyboard.IsKeyNewlyDown(glfw.Key3) {
-		e.selected = VWALL_TOOL
-		fmt.Printf("Selected vertical wall tool\n")
+		if e.selected == VDOOR_TOOL {
+			e.selected = HDOOR_TOOL
+		} else {
+			e.selected = VDOOR_TOOL
+		}
 	}
 	if e.Keyboard.IsKeyNewlyDown(glfw.Key4) {
-		e.selected = HDOOR_TOOL
-		fmt.Printf("Selected horizontal door tool\n")
-	}
-	if e.Keyboard.IsKeyNewlyDown(glfw.Key5) {
-		e.selected = VDOOR_TOOL
-		fmt.Printf("Selected vertical door tool\n")
+		e.selected = FIXTURE_TOOL
 	}
 
 	//
@@ -84,7 +85,7 @@ func (e *Editor) Update(elapsedMs int64, hasFocus bool) {
 
 	row := y
 	col := x
-	e.isValidSelection = e.executor.HasAction(e.selected, row, col)
+	e.affectedTileIndexes, e.isRemoveAction = e.executor.HasAction(e.selected, row, col)
 
 	//
 	// Fire actions
@@ -140,19 +141,55 @@ func (e *Editor) Render(elapsedMs int64) {
 	e.baseRenderer.Render(0, 0, rendering.DisplayWidth, rendering.DisplayHeight, nil, nil, false)
 
 	var color rendering.Color
-	if e.performingAction {
-		color = rendering.Color{0, 0, 0, 0.5}
-	} else if e.isValidSelection {
-		color = rendering.Color{0, 1, 0, 0.5}
+	if len(e.affectedTileIndexes) > 0 {
+		if e.performingAction {
+			color = rendering.Color{0, 0, 0, 0.5}
+		} else if e.isRemoveAction {
+			color = rendering.Color{1, 0, 0, 0.5}
+		} else {
+			color = rendering.Color{0, 1, 0, 0.5}
+		}
 	} else {
-		color = rendering.Color{1, 0, 0, 0.5}
+		color = rendering.Color{1, 1, 1, 0.5}
 	}
 
 	e.SpriteBatch.Begin()
-	e.SpriteBatch.Draw(e.texture, float32(e.x)*tileSize, float32(e.y)*tileSize, tileSize, tileSize, rendering.WithColor(color))
+	for _, tileIndex := range e.affectedTileIndexes {
+		e.SpriteBatch.Draw(e.texture, float32(tileIndex.Col)*tileSize, float32(tileIndex.Row)*tileSize, tileSize, tileSize, rendering.WithColor(color))
+	}
+	if len(e.affectedTileIndexes) == 0 {
+		e.SpriteBatch.Draw(e.texture, float32(e.x)*tileSize, float32(e.y)*tileSize, tileSize, tileSize, rendering.WithColor(color))
+	}
 	e.SpriteBatch.End()
+
+	text := ""
+	switch e.selected {
+	case FLOOR_TOOL:
+		text = "Floor"
+	case HWALL_TOOL:
+		text = "Horizontal wall"
+	case VWALL_TOOL:
+		text = "Vertical wall"
+	case HDOOR_TOOL:
+		text = "Horizontal door"
+	case VDOOR_TOOL:
+		text = "Vertical door"
+	case FIXTURE_TOOL:
+		text = "Fixture"
+	}
+
+	font.Printf(10, 20, text+" tool selected", rendering.WithTextColor(rendering.White), rendering.WithTextScale(0.25))
 }
 
 func (e *Editor) IsOverlay() bool {
 	return false
+}
+
+var font *rendering.Font
+
+func initFonts() {
+	var err error
+	if font, err = rendering.LoadFont("Roboto-Light"); err != nil {
+		panic(err)
+	}
 }

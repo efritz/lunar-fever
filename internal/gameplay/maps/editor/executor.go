@@ -13,16 +13,18 @@ const (
 	VWALL_TOOL
 	HDOOR_TOOL
 	VDOOR_TOOL
+	FIXTURE_TOOL
 )
 
 const MaxUndoStack = 100
 
 var factories = map[Palette][2]commands.MapCommandFactory{
-	FLOOR_TOOL: {commands.NewAddFloorMapCommandFactory(), commands.NewRemoveFloorMapCommandFactory()},
-	HWALL_TOOL: {commands.NewAddHorizontalWallMapCommandFactory(), commands.NewRemoveHorizontalWallMapCommandFactory()},
-	VWALL_TOOL: {commands.NewAddVerticalWallMapCommandFactory(), commands.NewRemoveVerticalWallMapCommandFactory()},
-	HDOOR_TOOL: {commands.NewAddHorizontalDoorMapCommandFactory(), commands.NewRemoveHorizontalDoorMapCommandFactory()},
-	VDOOR_TOOL: {commands.NewAddVerticalDoorMapCommandFactory(), commands.NewRemoveVerticalDoorMapCommandFactory()},
+	FLOOR_TOOL:   {commands.NewAddFloorMapCommandFactory(), commands.NewRemoveFloorMapCommandFactory()},
+	HWALL_TOOL:   {commands.NewAddHorizontalWallMapCommandFactory(), commands.NewRemoveHorizontalWallMapCommandFactory()},
+	VWALL_TOOL:   {commands.NewAddVerticalWallMapCommandFactory(), commands.NewRemoveVerticalWallMapCommandFactory()},
+	HDOOR_TOOL:   {commands.NewAddHorizontalDoorMapCommandFactory(), commands.NewRemoveHorizontalDoorMapCommandFactory()},
+	VDOOR_TOOL:   {commands.NewAddVerticalDoorMapCommandFactory(), commands.NewRemoveVerticalDoorMapCommandFactory()},
+	FIXTURE_TOOL: {commands.NewAddFixtureMapCommandFactory(maps.Fixtures[maps.FIXTURE_BENCH]), commands.NewRemoveFixtureMapCommandFactory(maps.Fixtures[maps.FIXTURE_BENCH])},
 }
 
 type MapCommandExecutor struct {
@@ -38,16 +40,17 @@ func NewMapCommandExecutor(tileMap *maps.TileMap) *MapCommandExecutor {
 	}
 }
 
-func (e *MapCommandExecutor) HasAction(tile Palette, row, col int) bool {
-	return e.factoryFor(tile, row, col).Valid(e.tileMap, row, col)
+func (e *MapCommandExecutor) HasAction(tile Palette, row, col int) (_ []commands.TileIndex, isRemoveAction bool) {
+	factory, isRemoveAction := e.factoryFor(tile, row, col)
+	return factory.AffectedTileIndexes(e.tileMap, row, col), isRemoveAction
 }
 
 func (e *MapCommandExecutor) PrepareAction(tile Palette, row, col int) {
-	e.factory = e.factoryFor(tile, row, col)
+	e.factory, _ = e.factoryFor(tile, row, col)
 }
 
 func (e *MapCommandExecutor) ExecuteAction(tile Palette, row, col int) bool {
-	if e.factory != nil && e.factory.Valid(e.tileMap, row, col) {
+	if e.factory != nil && len(e.factory.AffectedTileIndexes(e.tileMap, row, col)) > 0 {
 		command := e.factory.Create(e.tileMap, row, col)
 		command.Execute()
 
@@ -98,13 +101,13 @@ func (e *MapCommandExecutor) ClearUndoState() {
 	e.redoLog = nil
 }
 
-func (e *MapCommandExecutor) factoryFor(tile Palette, row, col int) commands.MapCommandFactory {
+func (e *MapCommandExecutor) factoryFor(tile Palette, row, col int) (_ commands.MapCommandFactory, isRemoveAction bool) {
 	factory1 := factories[tile][0]
 	factory2 := factories[tile][1]
 
-	if factory2.Valid(e.tileMap, row, col) {
-		return factory2
+	if len(factory2.AffectedTileIndexes(e.tileMap, row, col)) > 0 {
+		return factory2, true
 	}
 
-	return factory1
+	return factory1, false
 }

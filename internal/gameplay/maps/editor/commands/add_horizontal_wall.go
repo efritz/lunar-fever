@@ -9,8 +9,12 @@ type AddHorizontalWallMapCommand struct {
 }
 
 func NewAddHorizontalWallMapCommandFactory() MapCommandFactory {
-	return NewMapCommandFactory(NewAddHorizontalWallMapCommand, func(m *maps.TileMap, row, col int) bool {
-		return m.GetBit(row, col, maps.FLOOR_BIT) && !m.GetBit(row, col, maps.INTERIOR_WALL_S_BIT) && m.GetBit(row+1, col, maps.FLOOR_BIT) && !m.GetBit(row+1, col, maps.INTERIOR_WALL_N_BIT)
+	return NewMapCommandFactory(NewAddHorizontalWallMapCommand, func(m *maps.TileMap, row, col int) []TileIndex {
+		if m.GetBit(row, col, maps.FLOOR_BIT) && !m.GetBit(row, col, maps.INTERIOR_WALL_S_BIT) && m.GetBit(row+1, col, maps.FLOOR_BIT) && !m.GetBit(row+1, col, maps.INTERIOR_WALL_N_BIT) {
+			return []TileIndex{{row, col}}
+		}
+
+		return nil
 	})
 }
 

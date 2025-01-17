@@ -9,8 +9,12 @@ type AddFloorMapCommand struct {
 }
 
 func NewAddFloorMapCommandFactory() MapCommandFactory {
-	return NewMapCommandFactory(NewAddFloorMapCommand, func(m *maps.TileMap, row, col int) bool {
-		return !m.GetBit(row, col, maps.FLOOR_BIT)
+	return NewMapCommandFactory(NewAddFloorMapCommand, func(m *maps.TileMap, row, col int) []TileIndex {
+		if !m.GetBit(row, col, maps.FLOOR_BIT) {
+			return []TileIndex{{row, col}}
+		}
+
+		return nil
 	})
 }
 

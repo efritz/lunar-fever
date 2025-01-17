@@ -8,18 +8,20 @@ import (
 )
 
 type BaseRenderer struct {
-	spriteBatch  *rendering.SpriteBatch
-	tileMap      *TileMap
-	textures     map[TileBitIndex]baseTexture
-	emptyTexture rendering.Texture
+	spriteBatch   *rendering.SpriteBatch
+	tileMap       *TileMap
+	textures      map[TileBitIndex]baseTexture
+	emptyTexture  rendering.Texture
+	fixturesAtlas rendering.Texture
 }
 
 func NewBaseRenderer(spriteBatch *rendering.SpriteBatch, textureLoader *rendering.TextureLoader, tileMap *TileMap, renderDoors bool) *BaseRenderer {
 	return &BaseRenderer{
-		spriteBatch:  spriteBatch,
-		tileMap:      tileMap,
-		textures:     newBaseTextureMap(textureLoader.Load("base"), renderDoors),
-		emptyTexture: textureLoader.Load("base").Region(7*32, 1*32, 32, 32),
+		spriteBatch:   spriteBatch,
+		tileMap:       tileMap,
+		textures:      newBaseTextureMap(textureLoader.Load("base"), renderDoors),
+		emptyTexture:  textureLoader.Load("base").Region(7*32, 1*32, 32, 32),
+		fixturesAtlas: textureLoader.Load("fixtures"),
 	}
 }
 
@@ -147,9 +149,54 @@ func (r *BaseRenderer) Render(x1, y1, x2, y2 float32, rooms []Room, navigationGr
 	endCol := math.Min(tileMap.Width(), math.NextMultiple(int(x2), 64)/64)
 	endRow := math.Min(tileMap.Height(), math.NextMultiple(int(y2), 64)/64)
 
+	// Floors
 	for col := startCol; col < endCol; col++ {
 		for row := startRow; row < endRow; row++ {
 			for _, bitIndex := range TileBitIndexes {
+				if bitIndex != FLOOR_BIT {
+					continue
+				}
+				baseTexture, ok := r.textures[bitIndex]
+				if !ok {
+					continue
+				}
+
+				if tileMap.GetBit(row, col, bitIndex) {
+					r.spriteBatch.Draw(
+						baseTexture.texture,
+						float32(col)*64, float32(row)*64, 64, 64,
+						rendering.WithRotation(baseTexture.rotation),
+						rendering.WithOrigin(32, 32),
+					)
+				}
+			}
+		}
+	}
+
+	// Fixtures
+	for col := startCol; col < endCol; col++ {
+		for row := startRow; row < endRow; row++ {
+			if fixture, ok := tileMap.GetFixture(row, col); ok {
+				r.spriteBatch.Draw(
+					r.fixturesAtlas.Region(
+						float32(fixture.AtlasRow)*64,
+						float32(fixture.AtlasCol)*64,
+						float32(fixture.TileWidth)*64,
+						float32(fixture.TileHeight)*64,
+					),
+					float32(col)*64, float32(row)*64, float32(fixture.TileWidth)*64, float32(fixture.TileHeight)*64,
+				)
+			}
+		}
+	}
+
+	// Non-floors
+	for col := startCol; col < endCol; col++ {
+		for row := startRow; row < endRow; row++ {
+			for _, bitIndex := range TileBitIndexes {
+				if bitIndex == FLOOR_BIT {
+					continue
+				}
 				baseTexture, ok := r.textures[bitIndex]
 				if !ok {
 					continue

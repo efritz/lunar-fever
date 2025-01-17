@@ -1,11 +1,13 @@
 package maps
 
 import (
+	stdmath "math"
+
 	"github.com/efritz/lunar-fever/internal/common/math"
 	"github.com/engelsjk/polygol"
 )
 
-const wallExtents = float32(32)
+const obstacleExtents = float32(32)
 
 func expandObstacleEdge(obstacle Edge) Bound {
 	if obstacle.To.X == obstacle.From.X {
@@ -15,32 +17,51 @@ func expandObstacleEdge(obstacle Edge) Bound {
 		}
 
 		return newBound(
-			math.Vector{obstacle.From.X - wallExtents, obstacle.From.Y},
-			math.Vector{obstacle.To.X + wallExtents, obstacle.From.Y},
-			math.Vector{obstacle.To.X + wallExtents, obstacle.To.Y},
-			math.Vector{obstacle.From.X - wallExtents, obstacle.To.Y},
+			math.Vector{obstacle.From.X - obstacleExtents, obstacle.From.Y},
+			math.Vector{obstacle.To.X + obstacleExtents, obstacle.From.Y},
+			math.Vector{obstacle.To.X + obstacleExtents, obstacle.To.Y},
+			math.Vector{obstacle.From.X - obstacleExtents, obstacle.To.Y},
 		)
-	} else {
+	} else if obstacle.To.Y == obstacle.From.Y {
 		if obstacle.From.X > obstacle.To.X {
 			// sanity check
 			panic("wall is not left to right")
 		}
 
 		return newBound(
-			math.Vector{obstacle.From.X, obstacle.From.Y - wallExtents},
-			math.Vector{obstacle.To.X, obstacle.From.Y - wallExtents},
-			math.Vector{obstacle.To.X, obstacle.To.Y + wallExtents},
-			math.Vector{obstacle.From.X, obstacle.To.Y + wallExtents},
+			math.Vector{obstacle.From.X, obstacle.From.Y - obstacleExtents},
+			math.Vector{obstacle.To.X, obstacle.From.Y - obstacleExtents},
+			math.Vector{obstacle.To.X, obstacle.To.Y + obstacleExtents},
+			math.Vector{obstacle.From.X, obstacle.To.Y + obstacleExtents},
 		)
 	}
 
 	panic("malformed edge")
 }
 
-func subtract(bounds []Bound, obstacles []Edge) []Bound {
+func subtract(bounds []Bound, obstacles []Edge, fixtures []Bound) []Bound {
 	var obstacleBounds []Bound
 	for _, obstacle := range obstacles {
 		obstacleBounds = append(obstacleBounds, expandObstacleEdge(obstacle))
+	}
+
+	for _, fixture := range fixtures {
+		minX, minY := float32(+stdmath.MaxFloat32), float32(+stdmath.MaxFloat32)
+		maxX, maxY := float32(-stdmath.MaxFloat32), float32(-stdmath.MaxFloat32)
+
+		for _, vertex := range fixture.Vertices {
+			minX = math.Min(minX, vertex.X)
+			minY = math.Min(minY, vertex.Y)
+			maxX = math.Max(maxX, vertex.X)
+			maxY = math.Max(maxY, vertex.Y)
+		}
+
+		obstacleBounds = append(obstacleBounds, newBound(
+			math.Vector{minX - obstacleExtents, minY - obstacleExtents},
+			math.Vector{maxX + obstacleExtents, minY - obstacleExtents},
+			math.Vector{maxX + obstacleExtents, maxY + obstacleExtents},
+			math.Vector{minX - obstacleExtents, maxY + obstacleExtents},
+		))
 	}
 
 	for _, obstacle := range obstacleBounds {

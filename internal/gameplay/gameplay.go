@@ -69,6 +69,7 @@ func NewGameplay(engineCtx *engine.Context) view.View {
 	createScientist(gameCtx)
 	createRover(gameCtx)
 	createWalls(gameCtx)
+	createFixtures(gameCtx)
 
 	return &Gameplay{
 		GameContext:         gameCtx,
