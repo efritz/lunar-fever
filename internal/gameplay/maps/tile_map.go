@@ -188,7 +188,12 @@ func (m *TileMap) GetAllBits(row, col int, bitIndexes ...TileBitIndex) bool {
 }
 
 func (m *TileMap) GetBits(row, col int) int64 {
-	return m.data[m.bitsetIndex(row, col)]
+	index := m.bitsetIndex(row, col)
+	if index < 0 || index >= len(m.data) {
+		return 0
+	}
+
+	return m.data[index]
 }
 
 func (m *TileMap) GetFixture(row, col int) (Fixture, bool) {
