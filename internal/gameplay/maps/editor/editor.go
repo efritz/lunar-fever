@@ -1,6 +1,9 @@
 package editor
 
 import (
+	stdmath "math"
+
+	"github.com/efritz/lunar-fever/internal/common/math"
 	"github.com/efritz/lunar-fever/internal/engine"
 	"github.com/efritz/lunar-fever/internal/engine/rendering"
 	"github.com/efritz/lunar-fever/internal/engine/view"
@@ -72,11 +75,35 @@ func (e *Editor) Update(elapsedMs int64, hasFocus bool) {
 	}
 
 	//
+	// Camera controls
+
+	cameraXDir := int64(0)
+	cameraYDir := int64(0)
+	if e.Keyboard.IsKeyDown(glfw.KeyUp) {
+		cameraYDir++
+	}
+	if e.Keyboard.IsKeyDown(glfw.KeyDown) {
+		cameraYDir--
+	}
+	if e.Keyboard.IsKeyDown(glfw.KeyLeft) {
+		cameraXDir++
+	}
+	if e.Keyboard.IsKeyDown(glfw.KeyRight) {
+		cameraXDir--
+	}
+
+	mod := float32(500)
+	e.Camera.Translate(float32(cameraXDir*elapsedMs), float32(cameraYDir*elapsedMs))
+	e.Camera.Zoom(float32(e.Mouse.ScrollDelta()) / mod)
+
+	//
 	// Update position
 
 	size := 64
-	x := int(e.Mouse.X()) / size
-	y := int(e.Mouse.Y()) / size
+	mx := e.Camera.Unprojectx(float32(e.Mouse.X()))
+	my := e.Camera.UnprojectY(float32(e.Mouse.Y()))
+	x := int(stdmath.Floor(float64(mx) / float64(size)))
+	y := int(stdmath.Floor(float64(my) / float64(size)))
 
 	oldX := e.x
 	oldY := e.y
@@ -138,7 +165,9 @@ func (e *Editor) Render(elapsedMs int64) {
 	// 	g.drawLine(j, 0, j, getHeight());
 	// }
 
-	e.baseRenderer.Render(0, 0, rendering.DisplayWidth, rendering.DisplayHeight, nil, nil, false)
+	e.SpriteBatch.SetViewMatrix(e.Camera.ViewMatrix())
+	x1, y1, x2, y2 := e.Camera.Bounds()
+	e.baseRenderer.Render(x1, y1, x2, y2, nil, nil, false)
 
 	var color rendering.Color
 	if len(e.affectedTileIndexes) > 0 {
@@ -161,6 +190,7 @@ func (e *Editor) Render(elapsedMs int64) {
 		e.SpriteBatch.Draw(e.texture, float32(e.x)*tileSize, float32(e.y)*tileSize, tileSize, tileSize, rendering.WithColor(color))
 	}
 	e.SpriteBatch.End()
+	e.SpriteBatch.SetViewMatrix(math.IdentityMatrix)
 
 	text := ""
 	switch e.selected {
