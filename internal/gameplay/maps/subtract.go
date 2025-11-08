@@ -7,13 +7,63 @@ import (
 	"github.com/engelsjk/polygol"
 )
 
-const obstacleExtents = float32(32)
+const obstacleExtents = float32(24)
 
-func expandObstacleEdge(obstacle Edge) Bound {
+func expandWallEdge(wall Edge, doorEndpoints map[math.Vector]any) Bound {
+	if wall.To.X == wall.From.X {
+		if wall.From.Y > wall.To.Y {
+			// sanity check
+			panic("wall is not top to bottom")
+		}
+
+		top := wall.From.Y
+		if _, ok := doorEndpoints[wall.From]; !ok {
+			top -= obstacleExtents
+		}
+
+		bottom := wall.To.Y
+		if _, ok := doorEndpoints[wall.To]; !ok {
+			bottom += obstacleExtents
+		}
+
+		return newBound(
+			math.Vector{wall.From.X - obstacleExtents, top},
+			math.Vector{wall.To.X + obstacleExtents, top},
+			math.Vector{wall.To.X + obstacleExtents, bottom},
+			math.Vector{wall.From.X - obstacleExtents, bottom},
+		)
+	} else if wall.To.Y == wall.From.Y {
+		if wall.From.X > wall.To.X {
+			// sanity check
+			panic("wall is not left to right")
+		}
+
+		left := wall.From.X
+		if _, ok := doorEndpoints[wall.From]; !ok {
+			left -= obstacleExtents
+		}
+
+		right := wall.To.X
+		if _, ok := doorEndpoints[wall.To]; !ok {
+			right += obstacleExtents
+		}
+
+		return newBound(
+			math.Vector{left, wall.From.Y - obstacleExtents},
+			math.Vector{right, wall.From.Y - obstacleExtents},
+			math.Vector{right, wall.To.Y + obstacleExtents},
+			math.Vector{left, wall.To.Y + obstacleExtents},
+		)
+	}
+
+	panic("malformed edge")
+}
+
+func expandDoorEdge(obstacle Edge) Bound {
 	if obstacle.To.X == obstacle.From.X {
 		if obstacle.From.Y > obstacle.To.Y {
 			// sanity check
-			panic("wall is not top to bottom")
+			panic("door is not top to bottom")
 		}
 
 		return newBound(
@@ -25,7 +75,7 @@ func expandObstacleEdge(obstacle Edge) Bound {
 	} else if obstacle.To.Y == obstacle.From.Y {
 		if obstacle.From.X > obstacle.To.X {
 			// sanity check
-			panic("wall is not left to right")
+			panic("door is not left to right")
 		}
 
 		return newBound(
@@ -39,10 +89,19 @@ func expandObstacleEdge(obstacle Edge) Bound {
 	panic("malformed edge")
 }
 
-func subtract(bounds []Bound, obstacles []Edge, fixtures []Bound) []Bound {
+func subtract(bounds []Bound, walls []Edge, doors []Edge, fixtures []Bound) []Bound {
+	doorEndpoints := map[math.Vector]any{}
+	for _, door := range doors {
+		doorEndpoints[door.From] = nil
+		doorEndpoints[door.To] = nil
+	}
+
 	var obstacleBounds []Bound
-	for _, obstacle := range obstacles {
-		obstacleBounds = append(obstacleBounds, expandObstacleEdge(obstacle))
+	for _, wall := range walls {
+		obstacleBounds = append(obstacleBounds, expandWallEdge(wall, doorEndpoints))
+	}
+	for _, door := range doors {
+		obstacleBounds = append(obstacleBounds, expandDoorEdge(door))
 	}
 
 	for _, fixture := range fixtures {

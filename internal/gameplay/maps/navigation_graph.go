@@ -49,7 +49,7 @@ func constructNavigationGraph(rooms []Room, walls []Edge, doors []Edge) *Navigat
 
 	var doorBounds []doorBound
 	for _, door := range doors {
-		bound := expandObstacleEdge(door)
+		bound := expandDoorEdge(door)
 		doorBounds = append(doorBounds, doorBound{door, bound})
 		nodes[bound.ID] = newNavigationNode(bound, true)
 	}

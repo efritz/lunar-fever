@@ -18,7 +18,7 @@ func splitBoundAtIntersections(bounds []Bound, bound Bound, doors []Edge) Bound 
 
 	// queue = append(queue, doors...)
 	for _, door := range doors {
-		vx := expandObstacleEdge(door)
+		vx := expandDoorEdge(door)
 		for i, v := range vx.Vertices {
 			queue = append(queue, newEdge(v, vx.Vertices[nextVertexIndex(i, len(vx.Vertices))]))
 		}
