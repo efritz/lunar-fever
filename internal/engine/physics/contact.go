@@ -254,9 +254,19 @@ func (c Contact) Correct() {
 		return
 	}
 
+	// Correct position
 	correction := c.penetration / (c.body1.inverseMass + c.body2.inverseMass) * penetrationCorrection
 	c.body1.Position = c.body1.Position.Add(c.normal.Muls(-c.body1.inverseMass * correction))
 	c.body2.Position = c.body2.Position.Add(c.normal.Muls(+c.body2.inverseMass * correction))
+
+	// If objects are still moving towards each other, remove that component of velocity
+	velocityAlongNormal := c.body2.LinearVelocity.Sub(c.body1.LinearVelocity).Dot(c.normal)
+	if velocityAlongNormal < 0 {
+		correction := c.normal.Muls(velocityAlongNormal)
+		invMassSum := c.body1.inverseMass + c.body2.inverseMass
+		c.body1.LinearVelocity = c.body1.LinearVelocity.Add(correction.Muls(c.body1.inverseMass / invMassSum))
+		c.body2.LinearVelocity = c.body2.LinearVelocity.Sub(correction.Muls(c.body2.inverseMass / invMassSum))
+	}
 }
 
 func getRelativeVelocity(body1, body2 *Body, r1, r2 math.Vector) math.Vector {
