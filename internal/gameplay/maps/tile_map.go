@@ -4,6 +4,7 @@ import (
 	"bufio"
 	"encoding/binary"
 	"io"
+	"math"
 )
 
 type TileBitIndex int64
@@ -231,5 +232,46 @@ func (m *TileMap) ClearAll() {
 }
 
 func (m *TileMap) bitsetIndex(row, col int) int {
-	return col*m.width + row
+	return col*m.height + row
+}
+
+func (m *TileMap) Trim() *TileMap {
+	minRow, maxRow := math.MaxInt, -1
+	minCol, maxCol := math.MaxInt, -1
+
+	for col := 0; col < m.Width(); col++ {
+		for row := 0; row < m.Height(); row++ {
+			if m.GetBits(row, col) != 0 {
+				minRow = min(minRow, row)
+				maxRow = max(maxRow, row)
+				minCol = min(minCol, col)
+				maxCol = max(maxCol, col)
+			}
+		}
+	}
+
+	if maxRow < 0 || maxCol < 0 {
+		return NewTileMap(0, 0, m.GridSize())
+	}
+
+	const borderSize = 1
+	const padding = 2 * borderSize
+
+	trimmed := NewTileMap(
+		(maxCol-minCol+1)+padding,
+		(maxRow-minRow+1)+padding,
+		m.GridSize(),
+	)
+
+	for row := minRow; row <= maxRow; row++ {
+		for col := minCol; col <= maxCol; col++ {
+			trimmed.SetBits(
+				row-minRow+borderSize,
+				col-minCol+borderSize,
+				m.GetBits(row, col),
+			)
+		}
+	}
+
+	return trimmed
 }

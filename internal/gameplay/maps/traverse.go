@@ -43,7 +43,7 @@ func traverse(tileMap *TileMap, board [][]int, p point, id int) bool {
 			}
 
 			// Check for out of bounds
-			if neighbor.row < 0 || neighbor.row >= tileMap.Width() || neighbor.col < 0 || neighbor.col >= tileMap.Height() {
+			if neighbor.row < 0 || neighbor.row >= tileMap.Height() || neighbor.col < 0 || neighbor.col >= tileMap.Width() {
 				continue
 			}
 

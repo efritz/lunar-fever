@@ -25,6 +25,9 @@ type Editor struct {
 	performingAction    bool
 	affectedTileIndexes []commands.TileIndex
 	isRemoveAction      bool
+
+	offsetRow int
+	offsetCol int
 }
 
 func NewEditor(engineCtx *engine.Context) view.View {
@@ -36,7 +39,7 @@ func NewEditor(engineCtx *engine.Context) view.View {
 func (e *Editor) Init() {
 	tm, err := loader.ReadTileMap()
 	if err != nil {
-		tm = maps.NewTileMap(100, 100, 64)
+		tm = maps.NewTileMap(50, 50, 64)
 	}
 	e.tileMap = tm
 
@@ -48,6 +51,52 @@ func (e *Editor) Init() {
 }
 
 func (e *Editor) Exit() {}
+
+func (e *Editor) ensureMapAccommodates(row, col, padding int) {
+	expandLeft := 0
+	if minCol := col - padding; minCol < 0 {
+		expandLeft = -minCol
+	}
+
+	expandTop := 0
+	if minRow := row - padding; minRow < 0 {
+		expandTop = -minRow
+	}
+
+	expandRight := 0
+	if maxCol := col + padding; maxCol >= e.tileMap.Width() {
+		expandRight = maxCol - e.tileMap.Width() + 1
+	}
+
+	expandBottom := 0
+	if maxRow := row + padding; maxRow >= e.tileMap.Height() {
+		expandBottom = maxRow - e.tileMap.Height() + 1
+	}
+
+	if expandLeft == 0 && expandTop == 0 && expandRight == 0 && expandBottom == 0 {
+		return
+	}
+
+	oldMap := e.tileMap
+	newMap := maps.NewTileMap(
+		oldMap.Width()+expandLeft+expandRight,
+		oldMap.Height()+expandTop+expandBottom,
+		oldMap.GridSize(),
+	)
+
+	for col := 0; col < oldMap.Width(); col++ {
+		for row := 0; row < oldMap.Height(); row++ {
+			newMap.SetBits(row+expandTop, col+expandLeft, oldMap.GetBits(row, col))
+		}
+	}
+
+	e.tileMap = newMap
+	e.offsetRow += expandTop
+	e.offsetCol += expandLeft
+
+	e.baseRenderer = maps.NewBaseRenderer(e.SpriteBatch, e.TextureLoader, e.tileMap, true)
+	e.executor = NewMapCommandExecutor(e.tileMap)
+}
 
 func (e *Editor) Update(elapsedMs int64, hasFocus bool) {
 	//
@@ -110,8 +159,10 @@ func (e *Editor) Update(elapsedMs int64, hasFocus bool) {
 	e.x = x
 	e.y = y
 
-	row := y
-	col := x
+	row := y + e.offsetRow
+	col := x + e.offsetCol
+	e.ensureMapAccommodates(row, col, 2) // padding
+
 	e.affectedTileIndexes, e.isRemoveAction = e.executor.HasAction(e.selected, row, col)
 
 	//
@@ -145,7 +196,7 @@ func (e *Editor) Update(elapsedMs int64, hasFocus bool) {
 	// Save tile map
 
 	if e.Keyboard.IsKeyDown(glfw.KeyLeftSuper) && e.Keyboard.IsKeyNewlyDown(glfw.KeyS) {
-		if err := loader.Write(e.tileMap); err != nil {
+		if err := loader.Write(e.tileMap.Trim()); err != nil {
 			panic(err.Error())
 		}
 	}
@@ -154,20 +205,16 @@ func (e *Editor) Update(elapsedMs int64, hasFocus bool) {
 func (e *Editor) Render(elapsedMs int64) {
 	tileSize := float32(64)
 
-	// TODO - grid lines?
-	// g.setColor(Color.lightGray);
-	// g.setStroke(new BasicStroke(1f, BasicStroke.CAP_BUTT, BasicStroke.JOIN_MITER, 100f, new float[]{10f}, 0f));
-	// int tileWidth = 4 * zoom;
-	// for (int i = 0; i < getHeight(); i += tileWidth) {
-	// 	g.drawLine(0, i, getWidth(), i);
-	// }
-	// for (int j = 0; j < getWidth(); j += tileWidth) {
-	// 	g.drawLine(j, 0, j, getHeight());
-	// }
+	gridSize := float32(e.tileMap.GridSize())
+	offsetX := -float32(e.offsetCol) * gridSize
+	offsetY := -float32(e.offsetRow) * gridSize
 
-	e.SpriteBatch.SetViewMatrix(e.Camera.ViewMatrix())
+	offsetMatrix := math.IdentityMatrix.Translate(offsetX, offsetY)
+	combinedMatrix := e.Camera.ViewMatrix().Multiply(offsetMatrix)
+	e.SpriteBatch.SetViewMatrix(combinedMatrix)
+
 	x1, y1, x2, y2 := e.Camera.Bounds()
-	e.baseRenderer.Render(x1, y1, x2, y2, nil, nil, false)
+	e.baseRenderer.Render(x1-offsetX, y1-offsetY, x2-offsetX, y2-offsetY, nil, nil, false)
 
 	var color rendering.Color
 	if len(e.affectedTileIndexes) > 0 {
@@ -187,7 +234,9 @@ func (e *Editor) Render(elapsedMs int64) {
 		e.SpriteBatch.Draw(e.texture, float32(tileIndex.Col)*tileSize, float32(tileIndex.Row)*tileSize, tileSize, tileSize, rendering.WithColor(color))
 	}
 	if len(e.affectedTileIndexes) == 0 {
-		e.SpriteBatch.Draw(e.texture, float32(e.x)*tileSize, float32(e.y)*tileSize, tileSize, tileSize, rendering.WithColor(color))
+		row := e.y + e.offsetRow
+		col := e.x + e.offsetCol
+		e.SpriteBatch.Draw(e.texture, float32(col)*tileSize, float32(row)*tileSize, tileSize, tileSize, rendering.WithColor(color))
 	}
 	e.SpriteBatch.End()
 	e.SpriteBatch.SetViewMatrix(math.IdentityMatrix)

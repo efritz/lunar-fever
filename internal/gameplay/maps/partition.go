@@ -24,9 +24,9 @@ func partitionRooms(tileMap *TileMap) (_ []Room, walls []Edge, doors []Edge) {
 	// mutually navigable floor tiles will be given a unique integer ID in the following
 	// two-dimensional board.
 
-	board := make([][]int, tileMap.Width())
+	board := make([][]int, tileMap.Height())
 	for i := range board {
-		board[i] = make([]int, tileMap.Height())
+		board[i] = make([]int, tileMap.Width())
 	}
 
 	id := 1
