@@ -32,6 +32,36 @@ func NewRemoveFixtureMapCommand(m *maps.TileMap, row, col int) MapCommand {
 }
 
 func (c *RemoveFixtureMapCommand) Execute() {
+	// Remove fixture and clear any FIXTURE_WALL_* around its footprint
+	c.backup, _ = c.m.GetFixture(c.row, c.col)
+	fixture := c.backup
+	if fixture.TileWidth > 0 && fixture.TileHeight > 0 {
+		for r := 0; r < fixture.TileHeight; r++ {
+			for cl := 0; cl < fixture.TileWidth; cl++ {
+				row := c.row + r
+				col := c.col + cl
+				c.m.ClearBit(row, col, maps.FIXTURE_WALL_N_BIT)
+				c.m.ClearBit(row, col, maps.FIXTURE_WALL_S_BIT)
+				c.m.ClearBit(row, col, maps.FIXTURE_WALL_E_BIT)
+				c.m.ClearBit(row, col, maps.FIXTURE_WALL_W_BIT)
+				if row-1 >= 0 {
+					c.m.ClearBit(row-1, col, maps.FIXTURE_WALL_S_BIT)
+				}
+				if row+1 < c.m.Height() {
+					c.m.ClearBit(row+1, col, maps.FIXTURE_WALL_N_BIT)
+				}
+				if col-1 >= 0 {
+					c.m.ClearBit(row, col-1, maps.FIXTURE_WALL_E_BIT)
+				}
+				if col+1 < c.m.Width() {
+					c.m.ClearBit(row, col+1, maps.FIXTURE_WALL_W_BIT)
+				}
+			}
+		}
+	}
+	c.m.SetFixture(c.row, c.col, maps.Fixtures[maps.FIXTURE_NONE])
+	return
+
 	c.backup, _ = c.m.GetFixture(c.row, c.col)
 	c.m.SetFixture(c.row, c.col, maps.Fixtures[maps.FIXTURE_NONE])
 }

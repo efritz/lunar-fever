@@ -36,6 +36,11 @@ const (
 	DOOR_E_BIT
 	DOOR_S_BIT
 	DOOR_W_BIT
+	// Fixture wall bits (invisible walls used for navmesh only)
+	FIXTURE_WALL_N_BIT
+	FIXTURE_WALL_S_BIT
+	FIXTURE_WALL_E_BIT
+	FIXTURE_WALL_W_BIT
 )
 
 var TileBitIndexes = []TileBitIndex{
@@ -44,6 +49,10 @@ var TileBitIndexes = []TileBitIndex{
 	INTERIOR_WALL_S_BIT,
 	INTERIOR_WALL_E_BIT,
 	INTERIOR_WALL_W_BIT,
+	FIXTURE_WALL_N_BIT,
+	FIXTURE_WALL_S_BIT,
+	FIXTURE_WALL_E_BIT,
+	FIXTURE_WALL_W_BIT,
 	EXTERIOR_WALL_N_BIT,
 	EXTERIOR_WALL_S_BIT,
 	EXTERIOR_WALL_E_BIT,

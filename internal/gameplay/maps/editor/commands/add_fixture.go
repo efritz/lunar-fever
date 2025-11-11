@@ -54,6 +54,37 @@ func NewAddFixtureMapCommand(m *maps.TileMap, row, col int) MapCommand {
 }
 
 func (c *AddFixtureMapCommand) Execute() {
+	// Set the fixture and emit FIXTURE_WALL_* around its footprint where adjacent to floor
+	fixture := maps.Fixtures[maps.FIXTURE_BENCH]
+	c.m.SetFixture(c.row, c.col, fixture)
+	for r := 0; r < fixture.TileHeight; r++ {
+		for cl := 0; cl < fixture.TileWidth; cl++ {
+			row := c.row + r
+			col := c.col + cl
+			// north boundary
+			if row-1 >= 0 && c.m.GetBit(row-1, col, maps.FLOOR_BIT) {
+				c.m.SetBit(row-1, col, maps.FIXTURE_WALL_S_BIT)
+				c.m.SetBit(row, col, maps.FIXTURE_WALL_N_BIT)
+			}
+			// south boundary
+			if row+1 < c.m.Height() && c.m.GetBit(row+1, col, maps.FLOOR_BIT) {
+				c.m.SetBit(row+1, col, maps.FIXTURE_WALL_N_BIT)
+				c.m.SetBit(row, col, maps.FIXTURE_WALL_S_BIT)
+			}
+			// west boundary
+			if col-1 >= 0 && c.m.GetBit(row, col-1, maps.FLOOR_BIT) {
+				c.m.SetBit(row, col-1, maps.FIXTURE_WALL_E_BIT)
+				c.m.SetBit(row, col, maps.FIXTURE_WALL_W_BIT)
+			}
+			// east boundary
+			if col+1 < c.m.Width() && c.m.GetBit(row, col+1, maps.FLOOR_BIT) {
+				c.m.SetBit(row, col+1, maps.FIXTURE_WALL_W_BIT)
+				c.m.SetBit(row, col, maps.FIXTURE_WALL_E_BIT)
+			}
+		}
+	}
+	return
+
 	c.m.SetFixture(c.row, c.col, maps.Fixtures[maps.FIXTURE_BENCH])
 }
 

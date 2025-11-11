@@ -131,7 +131,7 @@ func partitionRooms(tileMap *TileMap) (_ []Room, walls []Edge, doors []Edge) {
 						),
 						walls,
 						doors,
-						fixtures,
+						nil,
 					),
 					doors,
 				),
@@ -145,16 +145,16 @@ func partitionRooms(tileMap *TileMap) (_ []Room, walls []Edge, doors []Edge) {
 func extractWallsAndDoors(tileMap *TileMap) (walls []Edge, doors []Edge) {
 	for col := 0; col < tileMap.Width(); col++ {
 		for row := 0; row < tileMap.Height(); row++ {
-			if tileMap.GetBit(row, col, INTERIOR_WALL_N_BIT) {
+			if tileMap.GetBit(row, col, INTERIOR_WALL_N_BIT) || tileMap.GetBit(row, col, FIXTURE_WALL_N_BIT) {
 				walls = append(walls, newEdge(vec(col, row), vec(col+1, row)))
 			}
-			if tileMap.GetBit(row, col, INTERIOR_WALL_E_BIT) {
+			if tileMap.GetBit(row, col, INTERIOR_WALL_E_BIT) || tileMap.GetBit(row, col, FIXTURE_WALL_E_BIT) {
 				walls = append(walls, newEdge(vec(col+1, row), vec(col+1, row+1)))
 			}
-			if tileMap.GetBit(row, col, INTERIOR_WALL_S_BIT) {
+			if tileMap.GetBit(row, col, INTERIOR_WALL_S_BIT) || tileMap.GetBit(row, col, FIXTURE_WALL_S_BIT) {
 				walls = append(walls, newEdge(vec(col, row+1), vec(col+1, row+1)))
 			}
-			if tileMap.GetBit(row, col, INTERIOR_WALL_W_BIT) {
+			if tileMap.GetBit(row, col, INTERIOR_WALL_W_BIT) || tileMap.GetBit(row, col, FIXTURE_WALL_W_BIT) {
 				walls = append(walls, newEdge(vec(col, row), vec(col, row+1)))
 			}
 
@@ -168,6 +168,38 @@ func extractWallsAndDoors(tileMap *TileMap) (walls []Edge, doors []Edge) {
 	}
 
 	return walls, doors
+}
+
+// tmp_rovodev_removed: extractFloorPerimeterWalls was an earlier approach; no longer used for fixture walls
+// extractFloorPerimeterWalls scans the floor grid and emits edges along boundaries
+// where a FLOOR tile is adjacent to a non-FLOOR tile. This creates synthetic walls
+// around holes (e.g., fixtures) so expandWallEdge applies uniformly.
+func extractFloorPerimeterWalls(tileMap *TileMap) (walls []Edge) {
+	for col := 0; col < tileMap.Width(); col++ {
+		for row := 0; row < tileMap.Height(); row++ {
+			if !tileMap.GetBit(row, col, FLOOR_BIT) {
+				continue
+			}
+
+			// Check north neighbor; if out of bounds or not floor, add north edge of this cell
+			if row-1 < 0 || !tileMap.GetBit(row-1, col, FLOOR_BIT) {
+				walls = append(walls, newEdge(vec(col, row), vec(col+1, row)))
+			}
+			// Check south neighbor
+			if row+1 >= tileMap.Height() || !tileMap.GetBit(row+1, col, FLOOR_BIT) {
+				walls = append(walls, newEdge(vec(col, row+1), vec(col+1, row+1)))
+			}
+			// Check west neighbor
+			if col-1 < 0 || !tileMap.GetBit(row, col-1, FLOOR_BIT) {
+				walls = append(walls, newEdge(vec(col, row), vec(col, row+1)))
+			}
+			// Check east neighbor
+			if col+1 >= tileMap.Width() || !tileMap.GetBit(row, col+1, FLOOR_BIT) {
+				walls = append(walls, newEdge(vec(col+1, row), vec(col+1, row+1)))
+			}
+		}
+	}
+	return walls
 }
 
 func vec(col, row int) math.Vector {
