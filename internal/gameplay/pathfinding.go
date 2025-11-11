@@ -30,8 +30,6 @@ type nodeInfo struct {
 	h      float32 // Heuristic estimate to goal
 }
 
-const travelCost = 1
-
 func search(navigationGraph *maps.NavigationGraph, from, to int) []int {
 	edges := map[int][]int{}
 	for _, edge := range navigationGraph.Edges {
@@ -44,7 +42,9 @@ func search(navigationGraph *maps.NavigationGraph, from, to int) []int {
 	allNodes := map[int]*nodeInfo{}
 
 	// Initialize open set with start node
-	startNode := &nodeInfo{id: from, parent: -1, g: 0, h: travelCost}
+	startPos := navigationGraph.Nodes[from].Center
+	goalPos := navigationGraph.Nodes[to].Center
+	startNode := &nodeInfo{id: from, parent: -1, g: 0, h: goalPos.Sub(startPos).Len()}
 	openSet[from] = startNode
 	allNodes[from] = startNode
 
@@ -74,12 +74,16 @@ func search(navigationGraph *maps.NavigationGraph, from, to int) []int {
 				continue
 			}
 
-			tentativeG := current.g + travelCost
+			currentPos := navigationGraph.Nodes[currentID].Center
+			neighborPos := navigationGraph.Nodes[neighborID].Center
+			edgeCost := neighborPos.Sub(currentPos).Len()
+			tentativeG := current.g + edgeCost
 
 			neighbor, exists := openSet[neighborID]
 			if !exists {
 				// Discovered neighbor for first time
-				neighbor = &nodeInfo{id: neighborID, parent: currentID, g: tentativeG, h: travelCost}
+				heuristic := goalPos.Sub(neighborPos).Len()
+				neighbor = &nodeInfo{id: neighborID, parent: currentID, g: tentativeG, h: heuristic}
 				openSet[neighborID] = neighbor
 				allNodes[neighborID] = neighbor
 			} else if tentativeG < neighbor.g {
