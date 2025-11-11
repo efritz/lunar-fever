@@ -75,25 +75,69 @@ func (s *npcMovementSystem) Process(elapsedMs int64) {
 			pathfindingComponent.Waypoints = nil
 		}
 
-		mod := float32(1000)
-		speed := float32(.35)
-		transitionSpeed := float32(4)
+		const (
+			desiredSpeed  = float32(0.35)
+			maxSpeed      = float32(0.35)
+			maxForce      = float32(2.0)
+			slowingRadius = float32(80.0)
+			linearDamping = float32(0.15)
+			maxTurnRate   = float32(6.0)
+		)
+
+		dt := float32(elapsedMs) / 1000.0
 
 		if len(pathfindingComponent.Waypoints) > 0 {
-			angle := math.Atan232(pathfindingComponent.Waypoints[0].Y-physicsComponent.Body.Position.Y, pathfindingComponent.Waypoints[0].X-physicsComponent.Body.Position.X)
-			if angle < 0 {
-				angle = (2 * stdmath.Pi) - (-angle)
-			}
-			angle -= float32(stdmath.Pi / 2)
+			manager := NewSteeringManager(maxForce)
 
-			if physicsComponent.Body.Orient != angle {
-				physicsComponent.Body.SetOrient(angle)
+			if len(pathfindingComponent.Waypoints) == 1 {
+				manager.AddBehavior(&Arrival{
+					Position:      &physicsComponent.Body.Position,
+					Velocity:      &physicsComponent.Body.LinearVelocity,
+					Target:        pathfindingComponent.Waypoints[0],
+					DesiredSpeed:  desiredSpeed,
+					SlowingRadius: slowingRadius,
+				}, 1.0)
+			} else {
+				manager.AddBehavior(&Seek{
+					Position:     &physicsComponent.Body.Position,
+					Velocity:     &physicsComponent.Body.LinearVelocity,
+					Target:       pathfindingComponent.Waypoints[0],
+					DesiredSpeed: desiredSpeed,
+				}, 1.0)
 			}
 
-			physicsComponent.Body.LinearVelocity =
-				physicsComponent.Body.LinearVelocity.Muls(1 - (float32(elapsedMs) / mod * transitionSpeed)).Add(
-					pathfindingComponent.Waypoints[0].Sub(physicsComponent.Body.Position).Normalize().Muls(speed * float32(elapsedMs) / mod * transitionSpeed),
-				)
+			physicsComponent.Body.LinearVelocity = physicsComponent.Body.LinearVelocity.Add(manager.Calculate().Muls(dt))
+
+			if speed := physicsComponent.Body.LinearVelocity.Len(); speed > maxSpeed {
+				physicsComponent.Body.LinearVelocity = physicsComponent.Body.LinearVelocity.Normalize().Muls(maxSpeed)
+			}
+
+			damp := 1 - linearDamping*dt
+			if damp < 0 {
+				damp = 0
+			}
+			physicsComponent.Body.LinearVelocity = physicsComponent.Body.LinearVelocity.Muls(damp)
+
+			if v := physicsComponent.Body.LinearVelocity; v.Len() > 0.0001 {
+				targetAngle := math.Atan232(v.Y, v.X)
+				if targetAngle < 0 {
+					targetAngle = (2 * stdmath.Pi) - (-targetAngle)
+				}
+				targetAngle -= float32(stdmath.Pi / 2)
+
+				maxDelta := maxTurnRate * dt
+				current := physicsComponent.Body.Orient
+				delta := shortestAngleDiff(current, targetAngle)
+				if delta > maxDelta {
+					delta = maxDelta
+				} else if delta < -maxDelta {
+					delta = -maxDelta
+				}
+				newAngle := normalizeAngle(current + delta)
+				if physicsComponent.Body.Orient != newAngle {
+					physicsComponent.Body.SetOrient(newAngle)
+				}
+			}
 
 			if len(pathfindingComponent.Waypoints) == 1 {
 				if dist := pathfindingComponent.Waypoints[0].Sub(physicsComponent.Body.Position).Len(); dist < 30 {
@@ -123,6 +167,28 @@ func pointToTriangleDistance(point, a, b, c math.Vector) float32 {
 
 	// Return the smallest distance
 	return math.Min(math.Min(edgeDist1, edgeDist2), math.Min(edgeDist3, math.Min(vertexDist1, math.Min(vertexDist2, vertexDist3))))
+}
+
+func normalizeAngle(a float32) float32 {
+	for a <= 0 {
+		a += 2 * float32(stdmath.Pi)
+	}
+	for a > 2*float32(stdmath.Pi) {
+		a -= 2 * float32(stdmath.Pi)
+	}
+	return a
+}
+
+func shortestAngleDiff(from, to float32) float32 {
+	diff := normalizeAngle(to) - normalizeAngle(from)
+
+	if diff > float32(stdmath.Pi) {
+		diff -= 2 * float32(stdmath.Pi)
+	} else if diff < -float32(stdmath.Pi) {
+		diff += 2 * float32(stdmath.Pi)
+	}
+
+	return diff
 }
 
 func pointToSegmentDistance(p, a, b math.Vector) float32 {
