@@ -1,6 +1,8 @@
 package physics
 
 import (
+	stdmath "math"
+
 	"github.com/efritz/lunar-fever/internal/engine/ecs/component"
 	"github.com/efritz/lunar-fever/internal/engine/ecs/entity"
 	"github.com/efritz/lunar-fever/internal/engine/ecs/system"
@@ -26,6 +28,11 @@ func NewPhysicsComponentSystem(eventManager *event.Manager, componentManager *co
 func (d *PhysicsComponentSystemDelegate) Init() {}
 func (d *PhysicsComponentSystemDelegate) Exit() {}
 
+const (
+	linearDamping  = float32(2.0)
+	angularDamping = float32(2.0)
+)
+
 func (d *PhysicsComponentSystemDelegate) Process(entity entity.Entity, elapsedMs int64) {
 	physicsComponent, ok := d.physicsComponentManager.GetComponent(entity)
 	if !ok {
@@ -44,10 +51,12 @@ func (d *PhysicsComponentSystemDelegate) Process(entity entity.Entity, elapsedMs
 	body.Position = body.Position.Add(body.LinearVelocity.Muls(float32(elapsedMs)))
 	body.SetOrient(body.Orient + body.AngularVelocity*float32(elapsedMs))
 
-	decayRate := float32(0.99)
-	body.LinearVelocity = body.LinearVelocity.Muls(decayRate)
-	body.AngularVelocity = body.AngularVelocity * decayRate
-
+	// Time-based exponential damping
+	dt := float32(elapsedMs) / 1000.0
+	linearDecay := float32(stdmath.Exp(float64(-linearDamping * dt)))
+	angularDecay := float32(stdmath.Exp(float64(-angularDamping * dt)))
+	body.LinearVelocity = body.LinearVelocity.Muls(linearDecay)
+	body.AngularVelocity = body.AngularVelocity * angularDecay
 	// TODO - only if position or orient actually changed
 	d.entityMovedEventManager.Dispatch(EntityMovedEvent{entity})
 
