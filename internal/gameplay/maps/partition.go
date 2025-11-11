@@ -131,7 +131,7 @@ func partitionRooms(tileMap *TileMap) (_ []Room, walls []Edge, doors []Edge) {
 						),
 						walls,
 						doors,
-						fixtures,
+						nil,
 					),
 					doors,
 				),
@@ -145,16 +145,16 @@ func partitionRooms(tileMap *TileMap) (_ []Room, walls []Edge, doors []Edge) {
 func extractWallsAndDoors(tileMap *TileMap) (walls []Edge, doors []Edge) {
 	for col := 0; col < tileMap.Width(); col++ {
 		for row := 0; row < tileMap.Height(); row++ {
-			if tileMap.GetBit(row, col, INTERIOR_WALL_N_BIT) {
+			if tileMap.GetBit(row, col, INTERIOR_WALL_N_BIT) || tileMap.GetBit(row, col, FIXTURE_WALL_N_BIT) {
 				walls = append(walls, newEdge(vec(col, row), vec(col+1, row)))
 			}
-			if tileMap.GetBit(row, col, INTERIOR_WALL_E_BIT) {
+			if tileMap.GetBit(row, col, INTERIOR_WALL_E_BIT) || tileMap.GetBit(row, col, FIXTURE_WALL_E_BIT) {
 				walls = append(walls, newEdge(vec(col+1, row), vec(col+1, row+1)))
 			}
-			if tileMap.GetBit(row, col, INTERIOR_WALL_S_BIT) {
+			if tileMap.GetBit(row, col, INTERIOR_WALL_S_BIT) || tileMap.GetBit(row, col, FIXTURE_WALL_S_BIT) {
 				walls = append(walls, newEdge(vec(col, row+1), vec(col+1, row+1)))
 			}
-			if tileMap.GetBit(row, col, INTERIOR_WALL_W_BIT) {
+			if tileMap.GetBit(row, col, INTERIOR_WALL_W_BIT) || tileMap.GetBit(row, col, FIXTURE_WALL_W_BIT) {
 				walls = append(walls, newEdge(vec(col, row), vec(col, row+1)))
 			}
 

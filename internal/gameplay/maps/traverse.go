@@ -12,10 +12,10 @@ type neighborMeta struct {
 }
 
 var neighborMetas = []neighborMeta{
-	{delta: point{row: -1, col: +0}, obstacleBitsSelf: bits(INTERIOR_WALL_N_BIT, DOOR_N_BIT), obstacleBitsNeighbor: bits(INTERIOR_WALL_S_BIT, DOOR_S_BIT)},
-	{delta: point{row: +1, col: +0}, obstacleBitsSelf: bits(INTERIOR_WALL_S_BIT, DOOR_S_BIT), obstacleBitsNeighbor: bits(INTERIOR_WALL_N_BIT, DOOR_N_BIT)},
-	{delta: point{row: +0, col: -1}, obstacleBitsSelf: bits(INTERIOR_WALL_W_BIT, DOOR_W_BIT), obstacleBitsNeighbor: bits(INTERIOR_WALL_E_BIT, DOOR_E_BIT)},
-	{delta: point{row: +0, col: +1}, obstacleBitsSelf: bits(INTERIOR_WALL_E_BIT, DOOR_E_BIT), obstacleBitsNeighbor: bits(INTERIOR_WALL_W_BIT, DOOR_W_BIT)},
+	{delta: point{row: -1, col: +0}, obstacleBitsSelf: bits(INTERIOR_WALL_N_BIT, FIXTURE_WALL_N_BIT, DOOR_N_BIT), obstacleBitsNeighbor: bits(INTERIOR_WALL_S_BIT, FIXTURE_WALL_S_BIT, DOOR_S_BIT)},
+	{delta: point{row: +1, col: +0}, obstacleBitsSelf: bits(INTERIOR_WALL_S_BIT, FIXTURE_WALL_S_BIT, DOOR_S_BIT), obstacleBitsNeighbor: bits(INTERIOR_WALL_N_BIT, FIXTURE_WALL_N_BIT, DOOR_N_BIT)},
+	{delta: point{row: +0, col: -1}, obstacleBitsSelf: bits(INTERIOR_WALL_W_BIT, FIXTURE_WALL_W_BIT, DOOR_W_BIT), obstacleBitsNeighbor: bits(INTERIOR_WALL_E_BIT, FIXTURE_WALL_E_BIT, DOOR_E_BIT)},
+	{delta: point{row: +0, col: +1}, obstacleBitsSelf: bits(INTERIOR_WALL_E_BIT, FIXTURE_WALL_E_BIT, DOOR_E_BIT), obstacleBitsNeighbor: bits(INTERIOR_WALL_W_BIT, FIXTURE_WALL_W_BIT, DOOR_W_BIT)},
 }
 
 // traverse assigns the given identifier into the given two-dimensional boolean array representing

@@ -34,6 +34,36 @@ func NewRemoveFixtureMapCommand(m *maps.TileMap, row, col int) MapCommand {
 func (c *RemoveFixtureMapCommand) Execute() {
 	c.backup, _ = c.m.GetFixture(c.row, c.col)
 	c.m.SetFixture(c.row, c.col, maps.Fixtures[maps.FIXTURE_NONE])
+
+	if c.backup.TileWidth > 0 && c.backup.TileHeight > 0 {
+		for fixtureRow := 0; fixtureRow < c.backup.TileHeight; fixtureRow++ {
+			for fixtureCol := 0; fixtureCol < c.backup.TileWidth; fixtureCol++ {
+				row := c.row + fixtureRow
+				col := c.col + fixtureCol
+
+				c.m.ClearBit(row, col, maps.FIXTURE_WALL_N_BIT)
+				c.m.ClearBit(row, col, maps.FIXTURE_WALL_S_BIT)
+				c.m.ClearBit(row, col, maps.FIXTURE_WALL_E_BIT)
+				c.m.ClearBit(row, col, maps.FIXTURE_WALL_W_BIT)
+
+				if row-1 >= 0 {
+					c.m.ClearBit(row-1, col, maps.FIXTURE_WALL_S_BIT)
+				}
+
+				if row+1 < c.m.Height() {
+					c.m.ClearBit(row+1, col, maps.FIXTURE_WALL_N_BIT)
+				}
+
+				if col-1 >= 0 {
+					c.m.ClearBit(row, col-1, maps.FIXTURE_WALL_E_BIT)
+				}
+
+				if col+1 < c.m.Width() {
+					c.m.ClearBit(row, col+1, maps.FIXTURE_WALL_W_BIT)
+				}
+			}
+		}
+	}
 }
 
 func (c *RemoveFixtureMapCommand) Unexecute() {
