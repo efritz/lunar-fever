@@ -80,7 +80,6 @@ func (s *npcMovementSystem) Process(elapsedMs int64) {
 			maxSpeed      = float32(0.35)
 			maxForce      = float32(2.0)
 			slowingRadius = float32(80.0)
-			linearDamping = float32(0.15)
 			maxTurnRate   = float32(6.0)
 		)
 
@@ -111,12 +110,6 @@ func (s *npcMovementSystem) Process(elapsedMs int64) {
 			if speed := physicsComponent.Body.LinearVelocity.Len(); speed > maxSpeed {
 				physicsComponent.Body.LinearVelocity = physicsComponent.Body.LinearVelocity.Normalize().Muls(maxSpeed)
 			}
-
-			damp := 1 - linearDamping*dt
-			if damp < 0 {
-				damp = 0
-			}
-			physicsComponent.Body.LinearVelocity = physicsComponent.Body.LinearVelocity.Muls(damp)
 
 			if v := physicsComponent.Body.LinearVelocity; v.Len() > 0.0001 {
 				targetAngle := math.Atan232(v.Y, v.X)
