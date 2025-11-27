@@ -161,12 +161,6 @@ func (s *scientistRenderSystem) render(elapsedMs int64, entity entity.Entity) {
 		}
 	}
 
-	const spriteSize = 48.0
-	w := float32(spriteSize)
-	h := float32(spriteSize)
-	x1 := physicsComponent.Body.Position.X - w/2
-	y1 := physicsComponent.Body.Position.Y - h/2
-
 	if dead {
 		if !details.died && details.animationQueue.Empty() {
 			details.died = true
@@ -178,8 +172,18 @@ func (s *scientistRenderSystem) render(elapsedMs int64, entity entity.Entity) {
 			details.lastAnimationFrame = frame
 		}
 
+		x1, y1, x2, y2 := physicsComponent.Body.NonorientedBound()
+		w := x2 - x1
+		h := y2 - y1
+
 		s.SpriteBatch.Draw(details.lastAnimationFrame, x1, y1, w, h, rendering.WithRotation(physicsComponent.Body.Orient), rendering.WithOrigin(w/2, h/2))
 	} else {
+		const spriteSize = 48.0
+		w := float32(spriteSize)
+		h := float32(spriteSize)
+		x1 := physicsComponent.Body.Position.X - w/2
+		y1 := physicsComponent.Body.Position.Y - h/2
+
 		// Draw body
 		s.SpriteBatch.Draw(s.selectBodyTexture(physicsComponent, interacting, details, elapsedMs), x1, y1, w, h, rendering.WithRotation(physicsComponent.Body.Orient), rendering.WithOrigin(w/2, h/2))
 
