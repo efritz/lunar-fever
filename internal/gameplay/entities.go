@@ -15,7 +15,7 @@ func createPlayer(ctx *GameContext) {
 
 	body := physics.NewBody("scientist", []physics.Fixture{
 		physics.NewBasicFixture(
-			0, 0, 48/2, 48/2, // bounds
+			0, 0, 16, 16, // bounds
 			0.3, 0.2, // material
 			0, 0, // friction
 		),
@@ -34,7 +34,7 @@ func createScientist(ctx *GameContext) {
 
 	body := physics.NewBody("scientist", []physics.Fixture{
 		physics.NewBasicFixture(
-			0, 0, 48/2, 48/2, // bounds
+			0, 0, 16, 16, // bounds
 			0.3, 0.2, // material
 			0, 0, // friction
 		),
